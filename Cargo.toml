@@ -1,0 +1,20 @@
+[package]
+name = "esp-println"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[features]
+esp32 = []
+esp32c3 = []
+esp32s2 = []
+esp32s3 = []
+
+uart = []
+jtag_serial = [] # C3 + S3
+rtt = []
+
+default = [ "uart" ]

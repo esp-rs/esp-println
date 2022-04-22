@@ -1,0 +1,88 @@
+#![no_std]
+#![allow(dead_code)]
+
+#[macro_export]
+macro_rules! println {
+    ($($arg:tt)*) => {
+        {
+            use core::fmt::Write;
+            writeln!($crate::Printer, $($arg)*).ok();
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => {
+        {
+            use core::fmt::Write;
+            write!($crate::Printer, $($arg)*).ok();
+        }
+    };
+}
+
+#[cfg(feature = "esp32")]
+const UART_TX_ONE_CHAR: usize = 0x40009200;
+#[cfg(feature = "esp32c3")]
+const UART_TX_ONE_CHAR: usize = 0x40000068;
+#[cfg(feature = "esp32s2")]
+const UART_TX_ONE_CHAR: usize = 0x40012b10;
+#[cfg(feature = "esp32s3")]
+const UART_TX_ONE_CHAR: usize = 0x40000648;
+
+pub struct Printer;
+
+#[cfg(feature = "uart")]
+impl core::fmt::Write for Printer {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        {
+            core::fmt::Result::Ok(for &b in s.as_bytes() {
+                unsafe {
+                    let uart_tx_one_char: unsafe extern "C" fn(u8) -> i32 =
+                        core::mem::transmute(UART_TX_ONE_CHAR);
+                    uart_tx_one_char(b)
+                };
+            })
+        }
+    }
+}
+
+#[cfg(all(feature = "jtag_serial", feature = "esp32c3"))]
+impl core::fmt::Write for Printer {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        {
+            unsafe {
+                let fifo = 0x6004_3000 as *mut u32;
+                let conf = 0x6004_3004 as *mut u32;
+
+                // todo 64 byte chunks max
+                for chunk in s.as_bytes().chunks(32) {
+                    for &b in chunk {
+                        fifo.write_volatile(b as u32);
+                    }
+                    conf.write_volatile(0b001);
+
+                    while conf.read_volatile() & 0b011 == 0b000 {
+                        // wait
+                    }
+                }
+            }
+
+            core::fmt::Result::Ok(())
+        }
+    }
+}
+
+// TODO jtag_serial for esp32s3
+
+mod rtt;
+
+#[cfg(feature = "rtt")]
+impl core::fmt::Write for Printer {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        {
+            crate::rtt::write_str_internal(s);
+            core::fmt::Result::Ok(())
+        }
+    }
+}

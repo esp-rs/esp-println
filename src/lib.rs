@@ -50,12 +50,22 @@ impl core::fmt::Write for Printer {
 }
 
 #[cfg(all(feature = "jtag_serial", feature = "esp32c3"))]
+const SERIAL_JTAG_FIFO_REG: usize = 0x6004_3000;
+#[cfg(all(feature = "jtag_serial", feature = "esp32c3"))]
+const SERIAL_JTAG_CONF_REG: usize = 0x6004_3004;
+
+#[cfg(all(feature = "jtag_serial", feature = "esp32s3"))]
+const SERIAL_JTAG_FIFO_REG: usize = 0x6003_8000;
+#[cfg(all(feature = "jtag_serial", feature = "esp32s3"))]
+const SERIAL_JTAG_CONF_REG: usize = 0x6003_8004;
+
+#[cfg(all(feature = "jtag_serial", any(feature = "esp32c3", feature = "esp32s3")))]
 impl core::fmt::Write for Printer {
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
         {
             unsafe {
-                let fifo = 0x6004_3000 as *mut u32;
-                let conf = 0x6004_3004 as *mut u32;
+                let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
+                let conf = SERIAL_JTAG_CONF_REG as *mut u32;
 
                 // todo 64 byte chunks max
                 for chunk in s.as_bytes().chunks(32) {
@@ -74,8 +84,6 @@ impl core::fmt::Write for Printer {
         }
     }
 }
-
-// TODO jtag_serial for esp32s3
 
 mod rtt;
 

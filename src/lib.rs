@@ -29,6 +29,8 @@ const UART_TX_ONE_CHAR: usize = 0x40000068;
 const UART_TX_ONE_CHAR: usize = 0x40012b10;
 #[cfg(feature = "esp32s3")]
 const UART_TX_ONE_CHAR: usize = 0x40000648;
+#[cfg(feature = "esp8266")]
+const UART_TX_ONE_CHAR: usize = 0x40003b30;
 
 pub struct Printer;
 

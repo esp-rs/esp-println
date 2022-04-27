@@ -2,9 +2,14 @@
 
 - supports ESP32, ESP32C3, ESP32S2, ESP32S3
 - dependency free (not even depending on `esp-hal`)
-- supports JTAG-Serial output (only ESP32C3 for now)
-- supports RTT (lacking working RTT hosts)
-- work in progress
+- supports JTAG-Serial output where available
+- supports RTT (lacking working RTT hosts besides _probe-rs_ for ESP32C3)
+
+## RTT on ESP32C3
+
+The _cli_ utility should work for flashing and showing RTT logs on ESP32C3 by using it's `run` command.
+You need to use the `direct-boot` feature of the HAL to flash via _probe-rs_.
+
 
 ## License
 

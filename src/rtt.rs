@@ -59,7 +59,7 @@ pub(crate) fn write_str_internal(s: &str) -> usize {
     unsafe {
         let buf_len = BUFFER.len() as u32;
         let write_offset = _SEGGER_RTT.up.write_offset as isize;
-        let count = usize::min(BUFFER.len() - write_offset as usize - 1, len);
+        let count = usize::min(BUFFER.len() - write_offset as usize, len);
 
         core::intrinsics::copy_nonoverlapping(
             s.as_ptr() as *const u8,
@@ -68,7 +68,7 @@ pub(crate) fn write_str_internal(s: &str) -> usize {
         );
 
         let mut new_write_off = write_offset as u32 + count as u32;
-        if new_write_off >= buf_len - 1 {
+        if new_write_off >= buf_len {
             new_write_off = 0;
         }
 

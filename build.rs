@@ -26,4 +26,12 @@ fn main() {
             "Exactly 1 communication method must be enabled via its Cargo feature, {n} provided"
         ),
     }
+
+    // Ensure that, if the `jtag_serial` communication method feature is
+    // enabled, either the `esp32c3` or `esp32s3` chip feature is enabled.
+    if cfg!(feature = "jtag_serial")
+        && (cfg!(feature = "esp32") || cfg!(feature = "esp32s2") || cfg!(feature = "esp8266"))
+    {
+        panic!("The `jtag_serial` feature is only supported by the ESP32-C3 and ESP32-S3");
+    }
 }

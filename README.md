@@ -1,6 +1,6 @@
 # esp-println - println for ESP32 bare-metal
 
-- supports ESP32, ESP32C3, ESP32S2, ESP32S3
+- supports ESP32, ESP32-C3, ESP32-S2, ESP32-S3, and ESP8266
 - dependency free (not even depending on `esp-hal`)
 - supports JTAG-Serial output where available
 - supports RTT (lacking working RTT hosts besides _probe-rs_ for ESP32C3)

@@ -1,7 +1,14 @@
 [package]
-name = "esp-println"
+name    = "esp-println"
 version = "0.1.0"
-edition = "2021"
+authors = [
+    "Björn Quentin <bjoern.quentin@mobile-j.de>",
+    "Jesse Braham <jesse@beta7.io>",
+]
+edition     = "2021"
+description = "Provides `print!` and `println!` implementations various Espressif devices"
+repository  = "https://github.com/esp-rs/esp-println"
+license     = "MIT OR Apache-2.0"
 
 [features]
 default = ["uart"]

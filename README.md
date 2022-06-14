@@ -1,15 +1,16 @@
-# esp-println - println for ESP32 bare-metal
+# esp-println
 
-- supports ESP32, ESP32-C3, ESP32-S2, ESP32-S3, and ESP8266
-- dependency free (not even depending on `esp-hal`)
-- supports JTAG-Serial output where available
-- supports RTT (lacking working RTT hosts besides _probe-rs_ for ESP32C3)
+Provides `print!` and `println!` implementations various Espressif devices.
 
-## RTT on ESP32C3
+- Supports ESP32, ESP32-C3, ESP32-S2, ESP32-S3, and ESP8266
+- Dependency free (not even depending on `esp-hal`)
+- Supports JTAG-Serial output where available
+- Supports RTT (lacking working RTT hosts besides _probe-rs_ for ESP32-C3)
 
-The _cli_ utility should work for flashing and showing RTT logs on ESP32C3 by using it's `run` command.
+## RTT on ESP32-C3
+
+The _cli_ utility should work for flashing and showing RTT logs on ESP32-C3 by using it's `run` command.
 You need to use the `direct-boot` feature of the HAL to flash via _probe-rs_.
-
 
 ## License
 

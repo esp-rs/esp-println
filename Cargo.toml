@@ -10,6 +10,9 @@ description = "Provides `print!` and `println!` implementations various Espressi
 repository  = "https://github.com/esp-rs/esp-println"
 license     = "MIT OR Apache-2.0"
 
+[dependencies]
+log         = { version = "0.4.17", optional = true }
+
 [features]
 default = ["uart"]
 

@@ -3,7 +3,7 @@
 Provides `print!` and `println!` implementations various Espressif devices.
 
 - Supports ESP32, ESP32-C3, ESP32-S2, ESP32-S3, and ESP8266
-- Dependency free (not even depending on `esp-hal`)
+- Dependency free (not even depending on `esp-hal`, one optional dependency is `log`)
 - Supports JTAG-Serial output where available
 - Supports RTT (lacking working RTT hosts besides _probe-rs_ for ESP32-C3)
 

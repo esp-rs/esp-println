@@ -21,6 +21,9 @@ macro_rules! print {
     };
 }
 
+#[cfg(feature = "log")]
+pub mod logger;
+
 #[cfg(feature = "esp32")]
 const UART_TX_ONE_CHAR: usize = 0x40009200;
 #[cfg(feature = "esp32c3")]

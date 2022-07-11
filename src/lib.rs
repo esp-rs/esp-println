@@ -28,8 +28,6 @@ pub mod logger;
 const UART_TX_ONE_CHAR: usize = 0x40009200;
 #[cfg(feature = "esp32c3")]
 const UART_TX_ONE_CHAR: usize = 0x40000068;
-#[cfg(feature = "esp32s2")]
-const UART_TX_ONE_CHAR: usize = 0x40012b10;
 #[cfg(feature = "esp32s3")]
 const UART_TX_ONE_CHAR: usize = 0x40000648;
 #[cfg(feature = "esp8266")]
@@ -39,6 +37,7 @@ pub struct Printer;
 
 #[cfg(feature = "uart")]
 impl core::fmt::Write for Printer {
+    #[cfg(not(feature = "esp32s2"))]
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
         for &b in s.as_bytes() {
             unsafe {
@@ -46,6 +45,31 @@ impl core::fmt::Write for Printer {
                     core::mem::transmute(UART_TX_ONE_CHAR);
                 uart_tx_one_char(b)
             };
+        }
+        core::fmt::Result::Ok(())
+    }
+
+    #[cfg(feature = "esp32s2")]
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        // On ESP32-S2 the UART_TX_ONE_CHAR ROM-function seems to have some issues.
+        unsafe {
+            // enable TX_DONE interrupt
+            (0x3f40000c as *mut u32).write_volatile(1 << 14);
+        }
+        for chunk in s.as_bytes().chunks(64) {
+            for &b in chunk {
+                unsafe {
+                    // write FIFO
+                    (0x3f400000 as *mut u32).write_volatile(b as u32);
+                };
+            }
+
+            // wait for TX_DONE
+            while unsafe { (0x3f400004 as *const u32).read_volatile() } & (1 << 14) == 0 {}
+            unsafe {
+                // reset TX_DONE
+                (0x3f400010 as *mut u32).write_volatile(1 << 14);
+            }
         }
         core::fmt::Result::Ok(())
     }

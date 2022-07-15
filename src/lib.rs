@@ -109,6 +109,7 @@ impl core::fmt::Write for Printer {
     }
 }
 
+#[cfg(feature = "rtt")]
 mod rtt;
 
 #[cfg(feature = "rtt")]

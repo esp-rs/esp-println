@@ -61,7 +61,7 @@ pub(crate) fn write_str_internal(s: &str) -> usize {
         let write_offset = _SEGGER_RTT.up.write_offset as isize;
         let count = usize::min(BUFFER.len() - write_offset as usize, len);
 
-        core::intrinsics::copy_nonoverlapping(
+        core::ptr::copy_nonoverlapping(
             s.as_ptr() as *const u8,
             BUFFER.as_mut_ptr().offset(write_offset),
             count,

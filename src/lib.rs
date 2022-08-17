@@ -52,10 +52,6 @@ impl core::fmt::Write for Printer {
     #[cfg(feature = "esp32s2")]
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
         // On ESP32-S2 the UART_TX_ONE_CHAR ROM-function seems to have some issues.
-        unsafe {
-            // enable TX_DONE interrupt
-            (0x3f40000c as *mut u32).write_volatile(1 << 14);
-        }
         for chunk in s.as_bytes().chunks(64) {
             for &b in chunk {
                 unsafe {

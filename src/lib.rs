@@ -1,5 +1,4 @@
 #![no_std]
-#![allow(dead_code)]
 
 #[macro_export]
 macro_rules! println {
@@ -26,6 +25,8 @@ pub mod logger;
 
 #[cfg(feature = "esp32")]
 const UART_TX_ONE_CHAR: usize = 0x40009200;
+#[cfg(feature = "esp32c2")]
+const UART_TX_ONE_CHAR: usize = 0x40000058;
 #[cfg(feature = "esp32c3")]
 const UART_TX_ONE_CHAR: usize = 0x40000068;
 #[cfg(feature = "esp32s3")]

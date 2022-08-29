@@ -10,6 +10,11 @@ description = "Provides `print!` and `println!` implementations various Espressi
 repository  = "https://github.com/esp-rs/esp-println"
 license     = "MIT OR Apache-2.0"
 
+[package.metadata.docs.rs]
+features = ["esp32c3"]
+default-target = "riscv32imc-unknown-none-elf"
+cargo-args = ["-Z", "build-std=core"]
+
 [dependencies]
 log = { version = "0.4.17", optional = true }
 

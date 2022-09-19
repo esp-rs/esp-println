@@ -1,6 +1,6 @@
 [package]
 name    = "esp-println"
-version = "0.3.0"
+version = "0.3.1"
 authors = [
     "Björn Quentin <bjoern.quentin@mobile-j.de>",
     "Jesse Braham <jesse@beta7.io>",
@@ -17,6 +17,7 @@ cargo-args = ["-Z", "build-std=core"]
 
 [dependencies]
 log = { version = "0.4.17", optional = true }
+critical-section = { version = "1.1.1", optional = true }
 
 [features]
 default = ["uart"]

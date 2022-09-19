@@ -40,35 +40,39 @@ pub struct Printer;
 impl core::fmt::Write for Printer {
     #[cfg(not(feature = "esp32s2"))]
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        for &b in s.as_bytes() {
-            unsafe {
-                let uart_tx_one_char: unsafe extern "C" fn(u8) -> i32 =
-                    core::mem::transmute(UART_TX_ONE_CHAR);
-                uart_tx_one_char(b)
-            };
-        }
-        core::fmt::Result::Ok(())
+        with(|| {
+            for &b in s.as_bytes() {
+                unsafe {
+                    let uart_tx_one_char: unsafe extern "C" fn(u8) -> i32 =
+                        core::mem::transmute(UART_TX_ONE_CHAR);
+                    uart_tx_one_char(b)
+                };
+            }
+            core::fmt::Result::Ok(())
+        })
     }
 
     #[cfg(feature = "esp32s2")]
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        // On ESP32-S2 the UART_TX_ONE_CHAR ROM-function seems to have some issues.
-        for chunk in s.as_bytes().chunks(64) {
-            for &b in chunk {
-                unsafe {
-                    // write FIFO
-                    (0x3f400000 as *mut u32).write_volatile(b as u32);
-                };
-            }
+        with(|| {
+            // On ESP32-S2 the UART_TX_ONE_CHAR ROM-function seems to have some issues.
+            for chunk in s.as_bytes().chunks(64) {
+                for &b in chunk {
+                    unsafe {
+                        // write FIFO
+                        (0x3f400000 as *mut u32).write_volatile(b as u32);
+                    };
+                }
 
-            // wait for TX_DONE
-            while unsafe { (0x3f400004 as *const u32).read_volatile() } & (1 << 14) == 0 {}
-            unsafe {
-                // reset TX_DONE
-                (0x3f400010 as *mut u32).write_volatile(1 << 14);
+                // wait for TX_DONE
+                while unsafe { (0x3f400004 as *const u32).read_volatile() } & (1 << 14) == 0 {}
+                unsafe {
+                    // reset TX_DONE
+                    (0x3f400010 as *mut u32).write_volatile(1 << 14);
+                }
             }
-        }
-        core::fmt::Result::Ok(())
+            core::fmt::Result::Ok(())
+        })
     }
 }
 
@@ -85,24 +89,26 @@ const SERIAL_JTAG_CONF_REG: usize = 0x6003_8004;
 #[cfg(all(feature = "jtag_serial", any(feature = "esp32c3", feature = "esp32s3")))]
 impl core::fmt::Write for Printer {
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        unsafe {
-            let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
-            let conf = SERIAL_JTAG_CONF_REG as *mut u32;
+        with(|| {
+            unsafe {
+                let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
+                let conf = SERIAL_JTAG_CONF_REG as *mut u32;
 
-            // todo 64 byte chunks max
-            for chunk in s.as_bytes().chunks(32) {
-                for &b in chunk {
-                    fifo.write_volatile(b as u32);
-                }
-                conf.write_volatile(0b001);
+                // todo 64 byte chunks max
+                for chunk in s.as_bytes().chunks(32) {
+                    for &b in chunk {
+                        fifo.write_volatile(b as u32);
+                    }
+                    conf.write_volatile(0b001);
 
-                while conf.read_volatile() & 0b011 == 0b000 {
-                    // wait
+                    while conf.read_volatile() & 0b011 == 0b000 {
+                        // wait
+                    }
                 }
             }
-        }
 
-        core::fmt::Result::Ok(())
+            core::fmt::Result::Ok(())
+        })
     }
 }
 
@@ -112,10 +118,21 @@ mod rtt;
 #[cfg(feature = "rtt")]
 impl core::fmt::Write for Printer {
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        let count = crate::rtt::write_str_internal(s);
-        if count < s.len() {
-            crate::rtt::write_str_internal(&s[count..]);
-        }
-        core::fmt::Result::Ok(())
+        with(|| {
+            let count = crate::rtt::write_str_internal(s);
+            if count < s.len() {
+                crate::rtt::write_str_internal(&s[count..]);
+            }
+            core::fmt::Result::Ok(())
+        })
     }
+}
+
+#[inline]
+fn with<R>(f: impl FnOnce() -> R) -> R {
+    #[cfg(feature = "critical-section")]
+    return critical_section::with(|_| f());
+
+    #[cfg(not(feature = "critical-section"))]
+    f()
 }

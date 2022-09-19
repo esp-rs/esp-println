@@ -54,26 +54,28 @@ pub static mut _SEGGER_RTT: ControlBlock = ControlBlock {
 };
 
 pub(crate) fn write_str_internal(s: &str) -> usize {
-    let len = s.len();
+    super::with(|| {
+        let len = s.len();
 
-    unsafe {
-        let buf_len = BUFFER.len() as u32;
-        let write_offset = _SEGGER_RTT.up.write_offset as isize;
-        let count = usize::min(BUFFER.len() - write_offset as usize, len);
+        unsafe {
+            let buf_len = BUFFER.len() as u32;
+            let write_offset = _SEGGER_RTT.up.write_offset as isize;
+            let count = usize::min(BUFFER.len() - write_offset as usize, len);
 
-        core::ptr::copy_nonoverlapping(
-            s.as_ptr() as *const u8,
-            BUFFER.as_mut_ptr().offset(write_offset),
-            count,
-        );
+            core::ptr::copy_nonoverlapping(
+                s.as_ptr() as *const u8,
+                BUFFER.as_mut_ptr().offset(write_offset),
+                count,
+            );
 
-        let mut new_write_off = write_offset as u32 + count as u32;
-        if new_write_off >= buf_len {
-            new_write_off = 0;
+            let mut new_write_off = write_offset as u32 + count as u32;
+            if new_write_off >= buf_len {
+                new_write_off = 0;
+            }
+
+            _SEGGER_RTT.up.write_offset = new_write_off;
+
+            count
         }
-
-        _SEGGER_RTT.up.write_offset = new_write_off;
-
-        count
-    }
+    })
 }

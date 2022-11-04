@@ -4,6 +4,7 @@ fn main() {
         cfg!(feature = "esp32"),
         cfg!(feature = "esp32c2"),
         cfg!(feature = "esp32c3"),
+        cfg!(feature = "esp32c6"),
         cfg!(feature = "esp32s2"),
         cfg!(feature = "esp32s3"),
         cfg!(feature = "esp8266"),
@@ -28,9 +29,13 @@ fn main() {
         ),
     }
 
-    // Ensure that, if the `jtag_serial` communication method feature is
-    // enabled, either the `esp32c3` or `esp32s3` chip feature is enabled.
-    if cfg!(feature = "jtag_serial") && !(cfg!(feature = "esp32c3") || cfg!(feature = "esp32s3")) {
-        panic!("The `jtag_serial` feature is only supported by the ESP32-C3 and ESP32-S3");
+    // Ensure that, if the `jtag_serial` communication method feature is enabled,
+    // either the `esp32c3`, `esp32c6` or `esp32s3` chip feature is enabled.
+    if cfg!(feature = "jtag_serial")
+        && !(cfg!(feature = "esp32c3") || cfg!(feature = "esp32c6") || cfg!(feature = "esp32s3"))
+    {
+        panic!(
+            "The `jtag_serial` feature is only supported by the ESP32-C3, ESP32-C6, and ESP32-S3"
+        );
     }
 }

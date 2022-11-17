@@ -25,7 +25,7 @@ pub mod logger;
 
 #[cfg(feature = "esp32")]
 const UART_TX_ONE_CHAR: usize = 0x40009200;
-#[cfg(any(feature = "esp32c2", feature = "esp32c6"))]
+#[cfg(any(feature = "esp32c2", feature = "esp32c6", feature = "esp32h2"))]
 const UART_TX_ONE_CHAR: usize = 0x40000058;
 #[cfg(feature = "esp32c3")]
 const UART_TX_ONE_CHAR: usize = 0x40000068;
@@ -76,9 +76,9 @@ impl core::fmt::Write for Printer {
     }
 }
 
-#[cfg(all(feature = "jtag_serial", feature = "esp32c3"))]
+#[cfg(all(feature = "jtag_serial", any(feature = "esp32c3", feature = "esp32h2")))]
 const SERIAL_JTAG_FIFO_REG: usize = 0x6004_3000;
-#[cfg(all(feature = "jtag_serial", feature = "esp32c3"))]
+#[cfg(all(feature = "jtag_serial", any(feature = "esp32c3", feature = "esp32h2")))]
 const SERIAL_JTAG_CONF_REG: usize = 0x6004_3004;
 
 #[cfg(all(feature = "jtag_serial", feature = "esp32c6"))]
@@ -93,7 +93,12 @@ const SERIAL_JTAG_CONF_REG: usize = 0x6003_8004;
 
 #[cfg(all(
     feature = "jtag_serial",
-    any(feature = "esp32c3", feature = "esp32c6", feature = "esp32s3")
+    any(
+        feature = "esp32c3",
+        feature = "esp32c6",
+        feature = "esp32h2",
+        feature = "esp32s3"
+    )
 ))]
 impl core::fmt::Write for Printer {
     fn write_str(&mut self, s: &str) -> core::fmt::Result {

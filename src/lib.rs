@@ -1,5 +1,25 @@
 #![no_std]
 
+
+#[cfg(feature = "no-op")]
+#[macro_export]
+macro_rules! println {
+    ($($arg:tt)*) => {
+        {
+        }
+    };
+}
+
+#[cfg(feature = "no-op")]
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => {
+        {
+        }
+    };
+}
+
+#[cfg(not(feature = "no-op"))]
 #[macro_export]
 macro_rules! println {
     ($($arg:tt)*) => {
@@ -10,6 +30,7 @@ macro_rules! println {
     };
 }
 
+#[cfg(not(feature = "no-op"))]
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => {

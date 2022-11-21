@@ -37,3 +37,4 @@ esp8266 = []
 uart        = []
 jtag_serial = [] # C3, C6, H2, and S3 only!
 rtt         = []
+no-op       = []

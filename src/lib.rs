@@ -1,28 +1,10 @@
 #![no_std]
 
 
-#[cfg(feature = "no-op")]
 #[macro_export]
 macro_rules! println {
     ($($arg:tt)*) => {
-        {
-        }
-    };
-}
-
-#[cfg(feature = "no-op")]
-#[macro_export]
-macro_rules! print {
-    ($($arg:tt)*) => {
-        {
-        }
-    };
-}
-
-#[cfg(not(feature = "no-op"))]
-#[macro_export]
-macro_rules! println {
-    ($($arg:tt)*) => {
+        #[cfg(not(feature = "no-op"))]
         {
             use core::fmt::Write;
             writeln!($crate::Printer, $($arg)*).ok();
@@ -30,10 +12,10 @@ macro_rules! println {
     };
 }
 
-#[cfg(not(feature = "no-op"))]
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => {
+        #[cfg(not(feature = "no-op"))]
         {
             use core::fmt::Write;
             write!($crate::Printer, $($arg)*).ok();

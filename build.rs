@@ -1,35 +1,12 @@
+use feature_utils::mandatory_and_unique;
+
+mandatory_and_unique!(
+    "esp32", "esp32c2", "esp32c3", "esp32c6", "esp32h2", "esp32s2", "esp32s3", "esp8266",
+);
+
+mandatory_and_unique!("uart", "jtag_serial", "rtt");
+
 fn main() {
-    // Ensure that only a single chip is specified
-    let chip_features = [
-        cfg!(feature = "esp32"),
-        cfg!(feature = "esp32c2"),
-        cfg!(feature = "esp32c3"),
-        cfg!(feature = "esp32c6"),
-        cfg!(feature = "esp32h2"),
-        cfg!(feature = "esp32s2"),
-        cfg!(feature = "esp32s3"),
-        cfg!(feature = "esp8266"),
-    ];
-
-    match chip_features.iter().filter(|&&f| f).count() {
-        1 => {}
-        n => panic!("Exactly 1 chip must be enabled via its Cargo feature, {n} provided"),
-    };
-
-    // Ensure that only a single communication method is specified
-    let method_features = [
-        cfg!(feature = "uart"),
-        cfg!(feature = "jtag_serial"),
-        cfg!(feature = "rtt"),
-    ];
-
-    match method_features.iter().filter(|&&f| f).count() {
-        1 => {}
-        n => panic!(
-            "Exactly 1 communication method must be enabled via its Cargo feature, {n} provided"
-        ),
-    }
-
     // Ensure that, if the `jtag_serial` communication method feature is enabled,
     // either the `esp32c3`, `esp32c6` or `esp32s3` chip feature is enabled.
     if cfg!(feature = "jtag_serial")

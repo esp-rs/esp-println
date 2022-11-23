@@ -53,9 +53,9 @@ pub static mut _SEGGER_RTT: ControlBlock = ControlBlock {
     },
 };
 
-pub(crate) fn write_str_internal(s: &str) -> usize {
+pub(crate) fn write_bytes_internal(bytes: &[u8]) -> usize {
     super::with(|| {
-        let len = s.len();
+        let len = bytes.len();
 
         unsafe {
             let buf_len = BUFFER.len() as u32;
@@ -63,7 +63,7 @@ pub(crate) fn write_str_internal(s: &str) -> usize {
             let count = usize::min(BUFFER.len() - write_offset as usize, len);
 
             core::ptr::copy_nonoverlapping(
-                s.as_ptr() as *const u8,
+                bytes.as_ptr(),
                 BUFFER.as_mut_ptr().offset(write_offset),
                 count,
             );

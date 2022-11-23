@@ -29,16 +29,22 @@ macro_rules! print {
 
 pub struct Printer;
 
+impl core::fmt::Write for Printer {
+    fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        Printer.write_bytes(s.as_bytes());
+        Ok(())
+    }
+}
+
 #[cfg(feature = "rtt")]
 mod rtt_printer {
-    impl core::fmt::Write for super::Printer {
-        fn write_str(&mut self, s: &str) -> core::fmt::Result {
+    impl super::Printer {
+        pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
-                let count = crate::rtt::write_str_internal(s);
-                if count < s.len() {
-                    crate::rtt::write_str_internal(&s[count..]);
+                let count = crate::rtt::write_bytes_internal(bytes);
+                if count < bytes.len() {
+                    crate::rtt::write_bytes_internal(&bytes[count..]);
                 }
-                core::fmt::Result::Ok(())
             })
         }
     }
@@ -67,15 +73,15 @@ mod serial_jtag_printer {
         feature = "esp32h2",
         feature = "esp32s3"
     ))]
-    impl core::fmt::Write for super::Printer {
-        fn write_str(&mut self, s: &str) -> core::fmt::Result {
+    impl super::Printer {
+        pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
-                unsafe {
-                    let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
-                    let conf = SERIAL_JTAG_CONF_REG as *mut u32;
+                let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
+                let conf = SERIAL_JTAG_CONF_REG as *mut u32;
 
-                    // todo 64 byte chunks max
-                    for chunk in s.as_bytes().chunks(32) {
+                // todo 64 byte chunks max
+                for chunk in bytes.chunks(32) {
+                    unsafe {
                         for &b in chunk {
                             fifo.write_volatile(b as u32);
                         }
@@ -86,8 +92,6 @@ mod serial_jtag_printer {
                         }
                     }
                 }
-
-                core::fmt::Result::Ok(())
             })
         }
     }
@@ -106,26 +110,25 @@ mod uart_printer {
     #[cfg(feature = "esp8266")]
     const UART_TX_ONE_CHAR: usize = 0x40003b30;
 
-    impl core::fmt::Write for super::Printer {
+    impl super::Printer {
         #[cfg(not(feature = "esp32s2"))]
-        fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
-                for &b in s.as_bytes() {
+                for &b in bytes {
                     unsafe {
                         let uart_tx_one_char: unsafe extern "C" fn(u8) -> i32 =
                             core::mem::transmute(UART_TX_ONE_CHAR);
                         uart_tx_one_char(b)
                     };
                 }
-                core::fmt::Result::Ok(())
             })
         }
 
         #[cfg(feature = "esp32s2")]
-        fn write_str(&mut self, s: &str) -> core::fmt::Result {
+        pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
                 // On ESP32-S2 the UART_TX_ONE_CHAR ROM-function seems to have some issues.
-                for chunk in s.as_bytes().chunks(64) {
+                for chunk in bytes.chunks(64) {
                     for &b in chunk {
                         unsafe {
                             // write FIFO
@@ -140,7 +143,6 @@ mod uart_printer {
                         (0x3f400010 as *mut u32).write_volatile(1 << 14);
                     }
                 }
-                core::fmt::Result::Ok(())
             })
         }
     }

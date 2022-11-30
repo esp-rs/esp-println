@@ -1,3 +1,5 @@
+use super::println;
+
 pub fn init_logger(level: log::LevelFilter) {
     unsafe {
         log::set_logger_racy(&EspLogger).unwrap();

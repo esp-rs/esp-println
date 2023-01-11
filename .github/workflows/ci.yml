@@ -9,6 +9,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   check-riscv:
@@ -52,7 +53,7 @@ jobs:
             printer: "jtag_serial"
     steps:
       - uses: actions/checkout@v2
-      - uses: esp-rs/xtensa-toolchain@v1.2
+      - uses: esp-rs/xtensa-toolchain@v1.5
         with:
           default: true
           ldproxy: false

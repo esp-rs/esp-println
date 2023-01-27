@@ -12,6 +12,25 @@ Provides `print!` and `println!` implementations various Espressif devices.
 The _cli_ utility should work for flashing and showing RTT logs on ESP32-C3 by using it's `run` command.
 You need to use the `direct-boot` feature of the HAL to flash via _probe-rs_.
 
+## Usage
+
+In your `Cargo.toml`, under `[dependencies]`, add:
+
+```
+esp-println = { version = "0.3.1", features = ["esp32"] }
+```
+
+Choose a recent version and your chipset.
+
+Then in your program:
+
+```
+use esp_println::println;
+```
+
+You can now `println!("Hello world")` as usual.
+
+
 ## License
 
 Licensed under either of:

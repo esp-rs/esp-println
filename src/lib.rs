@@ -7,24 +7,24 @@ mod rtt;
 
 #[macro_export]
 macro_rules! println {
-    ($($arg:tt)*) => {
+    ($($arg:tt)*) => {{
         #[cfg(not(feature = "no-op"))]
         {
             use core::fmt::Write;
             writeln!($crate::Printer, $($arg)*).ok();
         }
-    };
+    }};
 }
 
 #[macro_export]
 macro_rules! print {
-    ($($arg:tt)*) => {
+    ($($arg:tt)*) => {{
         #[cfg(not(feature = "no-op"))]
         {
             use core::fmt::Write;
             write!($crate::Printer, $($arg)*).ok();
         }
-    };
+    }};
 }
 
 pub struct Printer;
@@ -52,14 +52,14 @@ mod rtt_printer {
 
 #[cfg(feature = "jtag_serial")]
 mod serial_jtag_printer {
-    #[cfg(any(feature = "esp32c3", feature = "esp32h2"))]
+    #[cfg(feature = "esp32c3")]
     const SERIAL_JTAG_FIFO_REG: usize = 0x6004_3000;
-    #[cfg(any(feature = "esp32c3", feature = "esp32h2"))]
+    #[cfg(feature = "esp32c3")]
     const SERIAL_JTAG_CONF_REG: usize = 0x6004_3004;
 
-    #[cfg(feature = "esp32c6")]
+    #[cfg(any(feature = "esp32c6", feature = "esp32h2"))]
     const SERIAL_JTAG_FIFO_REG: usize = 0x6000_F000;
-    #[cfg(feature = "esp32c6")]
+    #[cfg(any(feature = "esp32c6", feature = "esp32h2"))]
     const SERIAL_JTAG_CONF_REG: usize = 0x6000_F004;
 
     #[cfg(feature = "esp32s3")]
@@ -100,15 +100,15 @@ mod serial_jtag_printer {
 #[cfg(feature = "uart")]
 mod uart_printer {
     #[cfg(feature = "esp32")]
-    const UART_TX_ONE_CHAR: usize = 0x40009200;
+    const UART_TX_ONE_CHAR: usize = 0x4000_9200;
     #[cfg(any(feature = "esp32c2", feature = "esp32c6", feature = "esp32h2"))]
-    const UART_TX_ONE_CHAR: usize = 0x40000058;
+    const UART_TX_ONE_CHAR: usize = 0x4000_0058;
     #[cfg(feature = "esp32c3")]
-    const UART_TX_ONE_CHAR: usize = 0x40000068;
+    const UART_TX_ONE_CHAR: usize = 0x4000_0068;
     #[cfg(feature = "esp32s3")]
-    const UART_TX_ONE_CHAR: usize = 0x40000648;
+    const UART_TX_ONE_CHAR: usize = 0x4000_0648;
     #[cfg(feature = "esp8266")]
-    const UART_TX_ONE_CHAR: usize = 0x40003b30;
+    const UART_TX_ONE_CHAR: usize = 0x4000_3b30;
 
     impl super::Printer {
         #[cfg(not(feature = "esp32s2"))]

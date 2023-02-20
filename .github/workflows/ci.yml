@@ -27,13 +27,13 @@ jobs:
           - chip: esp32h2
             printer: "jtag_serial"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@v1
         with:
           target: riscv32imc-unknown-none-elf
           toolchain: nightly
           components: rust-src
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - run: cargo check -Zbuild-std=core --no-default-features --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},${{ matrix.printer }}
 
   check-xtensa:
@@ -47,22 +47,22 @@ jobs:
           - chip: esp32s3
             printer: "jtag_serial"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: esp-rs/xtensa-toolchain@v1.5
         with:
           default: true
           ldproxy: false
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - run: cargo check -Zbuild-std=core --no-default-features --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},${{ matrix.printer }}
 
   rustfmt:
     name: Check formatting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@v1
         with:
           toolchain: stable
           components: rustfmt
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check

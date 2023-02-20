@@ -28,18 +28,13 @@ jobs:
             printer: "jtag_serial"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@v1
         with:
-          profile: minimal
           target: riscv32imc-unknown-none-elf
           toolchain: nightly
           components: rust-src
-          default: true
       - uses: Swatinem/rust-cache@v1
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: -Zbuild-std=core --no-default-features --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --no-default-features --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},${{ matrix.printer }}
 
   check-xtensa:
     name: Check Xtensa
@@ -58,24 +53,16 @@ jobs:
           default: true
           ldproxy: false
       - uses: Swatinem/rust-cache@v1
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: -Zbuild-std=core --no-default-features --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --no-default-features --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},${{ matrix.printer }}
 
   rustfmt:
     name: Check formatting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
-          override: true
           components: rustfmt
       - uses: Swatinem/rust-cache@v1
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+      - run: cargo fmt --all -- --check

@@ -5,10 +5,10 @@ pub mod logger;
 #[cfg(feature = "rtt")]
 mod rtt;
 
+#[cfg(all(not(feature = "no-op"), not(feature = "crlf")))]
 #[macro_export]
 macro_rules! println {
     ($($arg:tt)*) => {{
-        #[cfg(not(feature = "no-op"))]
         {
             use core::fmt::Write;
             writeln!($crate::Printer, $($arg)*).ok();
@@ -16,15 +16,39 @@ macro_rules! println {
     }};
 }
 
+#[cfg(all(not(feature = "no-op"), feature = "crlf"))]
+#[macro_export]
+macro_rules! println {
+    ($($arg:tt)*) => {{
+        {
+            use core::fmt::Write;
+            write!($crate::Printer, $($arg)*).ok();
+            write!($crate::Printer, "\r\n").ok();
+        }
+    }};
+}
+
+#[cfg(not(feature = "no-op"))]
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => {{
-        #[cfg(not(feature = "no-op"))]
         {
             use core::fmt::Write;
             write!($crate::Printer, $($arg)*).ok();
         }
     }};
+}
+
+#[cfg(feature = "no-op")]
+#[macro_export]
+macro_rules! println {
+    ($($arg:tt)*) => {{}};
+}
+
+#[cfg(feature = "no-op")]
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => {{}};
 }
 
 pub struct Printer;
@@ -76,8 +100,15 @@ mod serial_jtag_printer {
     impl super::Printer {
         pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
+                const TIMEOUT_ITERATIONS: usize = 5_000;
+
                 let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
                 let conf = SERIAL_JTAG_CONF_REG as *mut u32;
+
+                if unsafe { conf.read_volatile() } & 0b011 == 0b000 {
+                    // still wasn't able to drain the FIFO - early return
+                    return;
+                }
 
                 // todo 64 byte chunks max
                 for chunk in bytes.chunks(32) {
@@ -87,8 +118,13 @@ mod serial_jtag_printer {
                         }
                         conf.write_volatile(0b001);
 
+                        let mut timeout = TIMEOUT_ITERATIONS;
                         while conf.read_volatile() & 0b011 == 0b000 {
                             // wait
+                            timeout -= 1;
+                            if timeout == 0 {
+                                return;
+                            }
                         }
                     }
                 }

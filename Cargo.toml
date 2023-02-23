@@ -1,6 +1,6 @@
 [package]
 name    = "esp-println"
-version = "0.3.1"
+version = "0.4.0"
 authors = [
     "Björn Quentin <bjoern.quentin@mobile-j.de>",
     "Jesse Braham <jesse@beta7.io>",

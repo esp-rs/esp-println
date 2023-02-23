@@ -76,10 +76,6 @@ mod rtt_printer {
 
 #[cfg(feature = "jtag_serial")]
 mod serial_jtag_printer {
-    use core::cell::RefCell;
-
-    use critical_section::{self, Mutex};
-
     #[cfg(feature = "esp32c3")]
     const SERIAL_JTAG_FIFO_REG: usize = 0x6004_3000;
     #[cfg(feature = "esp32c3")]
@@ -105,16 +101,14 @@ mod serial_jtag_printer {
         pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
                 const TIMEOUT_ITERATIONS: usize = 5_000;
-                static BLOCKED: Mutex<RefCell<bool>> = Mutex::new(RefCell::new(false));
-
-                let blocked = critical_section::with(|cs| *BLOCKED.borrow_ref(cs));
-
-                if blocked {
-                    return;
-                }
 
                 let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
                 let conf = SERIAL_JTAG_CONF_REG as *mut u32;
+
+                if unsafe { conf.read_volatile() } & 0b011 == 0b000 {
+                    // still wasn't able to drain the FIFO - early return
+                    return;
+                }
 
                 // todo 64 byte chunks max
                 for chunk in bytes.chunks(32) {
@@ -129,9 +123,6 @@ mod serial_jtag_printer {
                             // wait
                             timeout -= 1;
                             if timeout == 0 {
-                                critical_section::with(|cs| {
-                                    *BLOCKED.borrow_ref_mut(cs) = true;
-                                });
                                 return;
                             }
                         }

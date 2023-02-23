@@ -5,10 +5,10 @@ pub mod logger;
 #[cfg(feature = "rtt")]
 mod rtt;
 
+#[cfg(all(not(feature = "no-op"), not(feature = "crlf")))]
 #[macro_export]
 macro_rules! println {
     ($($arg:tt)*) => {{
-        #[cfg(not(feature = "no-op"))]
         {
             use core::fmt::Write;
             writeln!($crate::Printer, $($arg)*).ok();
@@ -16,15 +16,39 @@ macro_rules! println {
     }};
 }
 
+#[cfg(all(not(feature = "no-op"), feature = "crlf"))]
+#[macro_export]
+macro_rules! println {
+    ($($arg:tt)*) => {{
+        {
+            use core::fmt::Write;
+            write!($crate::Printer, $($arg)*).ok();
+            write!($crate::Printer, "\r\n").ok();
+        }
+    }};
+}
+
+#[cfg(not(feature = "no-op"))]
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => {{
-        #[cfg(not(feature = "no-op"))]
         {
             use core::fmt::Write;
             write!($crate::Printer, $($arg)*).ok();
         }
     }};
+}
+
+#[cfg(feature = "no-op")]
+#[macro_export]
+macro_rules! println {
+    ($($arg:tt)*) => {{}};
+}
+
+#[cfg(feature = "no-op")]
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => {{}};
 }
 
 pub struct Printer;
@@ -52,6 +76,10 @@ mod rtt_printer {
 
 #[cfg(feature = "jtag_serial")]
 mod serial_jtag_printer {
+    use core::cell::RefCell;
+
+    use critical_section::{self, Mutex};
+
     #[cfg(feature = "esp32c3")]
     const SERIAL_JTAG_FIFO_REG: usize = 0x6004_3000;
     #[cfg(feature = "esp32c3")]
@@ -76,6 +104,15 @@ mod serial_jtag_printer {
     impl super::Printer {
         pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
+                const TIMEOUT_ITERATIONS: usize = 5_000;
+                static BLOCKED: Mutex<RefCell<bool>> = Mutex::new(RefCell::new(false));
+
+                let blocked = critical_section::with(|cs| *BLOCKED.borrow_ref(cs));
+
+                if blocked {
+                    return;
+                }
+
                 let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
                 let conf = SERIAL_JTAG_CONF_REG as *mut u32;
 
@@ -87,8 +124,16 @@ mod serial_jtag_printer {
                         }
                         conf.write_volatile(0b001);
 
+                        let mut timeout = TIMEOUT_ITERATIONS;
                         while conf.read_volatile() & 0b011 == 0b000 {
                             // wait
+                            timeout -= 1;
+                            if timeout == 0 {
+                                critical_section::with(|cs| {
+                                    *BLOCKED.borrow_ref_mut(cs) = true;
+                                });
+                                return;
+                            }
                         }
                     }
                 }

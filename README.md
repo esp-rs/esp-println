@@ -1,11 +1,12 @@
 # esp-println
 
-Provides `print!` and `println!` implementations various Espressif devices.
+Provides `print!` and `println!` implementations for various Espressif devices.
 
 - Supports ESP32, ESP32-C2/C3/C6, ESP32-H2, ESP32-S2/S3, and ESP8266
 - Dependency free (not even depending on `esp-hal`, one optional dependency is `log`, another is `critical-section`)
-- Supports JTAG-Serial output where available
+- Supports JTAG-Serial output where available (activates `critical-section`)
 - Supports RTT (lacking working RTT hosts besides _probe-rs_ for ESP32-C3)
+- `no-op` features turns printing into a no-op
 
 ## RTT on ESP32-C3
 

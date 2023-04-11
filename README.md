@@ -1,6 +1,6 @@
 # esp-println
 
-Provides `print!` and `println!` implementations for various Espressif devices.
+Provides `print!`, `println!` and `dbg!` implementations for various Espressif devices.
 
 - Supports ESP32, ESP32-C2/C3/C6, ESP32-H2, ESP32-S2/S3, and ESP8266
 - Dependency free (not even depending on `esp-hal`, one optional dependency is `log`, another is `critical-section`)
@@ -8,7 +8,7 @@ Provides `print!` and `println!` implementations for various Espressif devices.
 - Supports RTT (lacking working RTT hosts besides _probe-rs_ for ESP32-C3)
 - `no-op` features turns printing into a no-op
 
-## RTT on ESP32-C3
+## RTT on ESP32-C3 / ESP32-C6
 
 The _cli_ utility should work for flashing and showing RTT logs on ESP32-C3 by using it's `run` command.
 You need to use the `direct-boot` feature of the HAL to flash via _probe-rs_.
@@ -31,6 +31,25 @@ use esp_println::println;
 
 You can now `println!("Hello world")` as usual.
 
+## Logging
+
+With the feature `log` activated you can initialize a simple logger like this
+```rust
+init_logger(log::LevelFilter::Info);
+```
+
+There is a default feature `colors` which enables colored log output.
+
+Additionally you can use
+```rust
+init_logger_from_env();
+```
+
+In this case the following environment variables are used:
+- `ESP_LOGLEVEL` sets the log level, use values like `trace`, `info` etc.
+- `ESP_LOGTARGETS` if set you should provide the crate names of crates (optionally with a path e.g. `esp_wifi::compat::common`) which should get logged, separated by `,` and no additional whitespace between
+
+If this simple logger implementation isn't sufficient for your needs you can implement your own logger on top of `esp-println` - see https://docs.rs/log/0.4.17/log/#implementing-a-logger
 
 ## License
 

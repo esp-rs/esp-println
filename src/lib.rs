@@ -5,25 +5,13 @@ pub mod logger;
 #[cfg(feature = "rtt")]
 mod rtt;
 
-#[cfg(all(not(feature = "no-op"), not(feature = "crlf")))]
+#[cfg(not(feature = "no-op"))]
 #[macro_export]
 macro_rules! println {
     ($($arg:tt)*) => {{
         {
             use core::fmt::Write;
             writeln!($crate::Printer, $($arg)*).ok();
-        }
-    }};
-}
-
-#[cfg(all(not(feature = "no-op"), feature = "crlf"))]
-#[macro_export]
-macro_rules! println {
-    ($($arg:tt)*) => {{
-        {
-            use core::fmt::Write;
-            write!($crate::Printer, $($arg)*).ok();
-            write!($crate::Printer, "\r\n").ok();
         }
     }};
 }

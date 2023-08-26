@@ -1,5 +1,7 @@
 #![no_std]
 
+#[cfg(feature = "defmt")]
+pub mod defmt;
 #[cfg(feature = "log")]
 pub mod logger;
 #[cfg(feature = "rtt")]

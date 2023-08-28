@@ -33,9 +33,10 @@ unsafe impl defmt::Logger for Logger {
         // section.
         unsafe { CS_RESTORE = restore };
 
-        // Write a non-UTF8 sequence to indicate the start of a defmt frame. We need
-        // this to distinguish defmt frames from other data that might be
-        // written to the printer.
+        // If not disabled, write a non-UTF8 sequence to indicate the start of a defmt
+        // frame. We need this to distinguish defmt frames from other data that
+        // might be written to the printer.
+        #[cfg(not(feature = "defmt-raw"))]
         do_write(&[0xFF, 0x00]);
 
         // safety: accessing the `static mut` is OK because we have acquired a critical
@@ -48,8 +49,9 @@ unsafe impl defmt::Logger for Logger {
         // section.
         ENCODER.end_frame(do_write);
 
-        // We don't need to write a custom end-of-frame sequence because the rzcobs
-        // encoding already includes a terminating zero.
+        // We don't need to write a custom end-of-frame sequence because:
+        //  - using `defmt`, the rzcobs encoding already includes a terminating zero
+        //  - using `defmt-raw`, we don't add any additional framing data
 
         // safety: accessing the `static mut` is OK because we have acquired a critical
         // section.

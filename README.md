@@ -54,7 +54,13 @@ If this simple logger implementation isn't sufficient for your needs you can imp
 ## defmt
 
 Using the `defmt` feature, esp-println will install a defmt global logger. The logger will output
-to the same data stream as `println!()`, and adds framing bytes so it can be used even with other, non-defmt output.
+to the same data stream as `println!()`, and adds framing bytes so it can be used even with other,
+non-defmt output. Using the `defmt` feature automatically uses the Rzcobs encoding and does not
+allow changing the encoding.
+
+You can also use the `defmt-raw` feature that allows using any encoding provided by defmt, but
+does not add extra framing. Using this feature requires some care as the defmt output may become
+unrecoverably mangled when other data are printed.
 
 ## License
 

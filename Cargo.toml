@@ -17,6 +17,7 @@ cargo-args = ["-Z", "build-std=core"]
 
 [dependencies]
 log = { version = "0.4.17", optional = true }
+defmt = { version = "=0.3.5", optional = true }
 critical-section = { version = "1.1.1", optional = true }
 
 [features]
@@ -39,6 +40,9 @@ uart        = []
 jtag_serial = [] # C3, C6, H2, and S3 only!
 rtt         = []
 no-op       = []
+
+# Enables a `defmt` backend usable with espflash. We force rzcobs encoding to simplify implementation
+defmt = ["dep:defmt", "defmt/encoding-rzcobs"]
 
 # logging sub-features
 colors      = []

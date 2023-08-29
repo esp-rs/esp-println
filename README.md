@@ -51,6 +51,17 @@ In this case the following environment variables are used:
 
 If this simple logger implementation isn't sufficient for your needs you can implement your own logger on top of `esp-println` - see https://docs.rs/log/0.4.17/log/#implementing-a-logger
 
+## defmt
+
+Using the `defmt` feature, esp-println will install a defmt global logger. The logger will output
+to the same data stream as `println!()`, and adds framing bytes so it can be used even with other,
+non-defmt output. Using the `defmt` feature automatically uses the Rzcobs encoding and does not
+allow changing the encoding.
+
+You can also use the `defmt-raw` feature that allows using any encoding provided by defmt, but
+does not add extra framing. Using this feature requires some care as the defmt output may become
+unrecoverably mangled when other data are printed.
+
 ## License
 
 Licensed under either of:

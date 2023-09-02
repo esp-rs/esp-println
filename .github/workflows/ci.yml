@@ -55,6 +55,27 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo check -Zbuild-std=core --no-default-features --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},${{ matrix.printer }}
 
+  check-log-riscv:
+    name: Log drivers
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        logger: ["", ",log", ",defmt", ",defmt-raw"]
+        color: [""]
+        critical-section: ["", ",critical-section"]
+        include:
+          - logger: ",log"
+            color: ",colors"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          target: riscv32imc-unknown-none-elf
+          toolchain: nightly
+          components: rust-src
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check -Zbuild-std=core --no-default-features --target=riscv32imc-unknown-none-elf --features=uart,esp32c2${{ matrix.logger }}${{ matrix.color }}${{ matrix.critical-section }}
+
   rustfmt:
     name: Check formatting
     runs-on: ubuntu-latest

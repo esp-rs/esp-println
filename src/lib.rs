@@ -1,6 +1,6 @@
 #![no_std]
 
-#[cfg(any(feature = "defmt", feature = "defmt_raw"))]
+#[cfg(any(feature = "defmt", feature = "defmt-raw"))]
 pub mod defmt;
 #[cfg(feature = "log")]
 pub mod logger;

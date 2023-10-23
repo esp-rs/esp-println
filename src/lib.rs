@@ -133,10 +133,11 @@ mod serial_jtag_printer {
     impl super::Printer {
         pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
-                const TIMEOUT_ITERATIONS: usize = 5_000;
+                const TIMEOUT_ITERATIONS: usize = 50_000;
 
                 if !fifo_clear() {
-                    // still wasn't able to drain the FIFO - early return
+                    // Still wasn't able to drain the FIFO - early return
+                    // This is important so we don't block forever if there is no host attached.
                     return;
                 }
 

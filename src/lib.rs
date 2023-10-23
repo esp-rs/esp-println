@@ -140,7 +140,7 @@ mod serial_jtag_printer {
                     return;
                 }
 
-                for chunk in bytes.chunks(32) {
+                for chunk in bytes.chunks(64) {
                     for &b in chunk {
                         fifo_write(b);
                     }

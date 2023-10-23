@@ -149,21 +149,10 @@ mod serial_jtag_printer {
     }
 }
 
-#[cfg(feature = "uart")]
+#[cfg(all(feature = "uart", any(feature = "esp32", feature = "esp8266")))]
 mod uart_printer {
-    #[cfg(feature = "esp32")]
     const UART_TX_ONE_CHAR: usize = 0x4000_9200;
-    #[cfg(any(feature = "esp32c2", feature = "esp32c6", feature = "esp32h2"))]
-    const UART_TX_ONE_CHAR: usize = 0x4000_0058;
-    #[cfg(feature = "esp32c3")]
-    const UART_TX_ONE_CHAR: usize = 0x4000_0068;
-    #[cfg(feature = "esp32s3")]
-    const UART_TX_ONE_CHAR: usize = 0x4000_0648;
-    #[cfg(feature = "esp8266")]
-    const UART_TX_ONE_CHAR: usize = 0x4000_3b30;
-
     impl super::Printer {
-        #[cfg(not(feature = "esp32s2"))]
         pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
                 for &b in bytes {
@@ -175,8 +164,13 @@ mod uart_printer {
                 }
             })
         }
+    }
+}
 
-        #[cfg(feature = "esp32s2")]
+#[cfg(all(feature = "uart", feature = "esp32s2"))]
+mod uart_printer {
+    const UART_TX_ONE_CHAR: usize = 0x4000_9200;
+    impl super::Printer {
         pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
                 // On ESP32-S2 the UART_TX_ONE_CHAR ROM-function seems to have some issues.
@@ -194,6 +188,119 @@ mod uart_printer {
                         // reset TX_DONE
                         (0x3f400010 as *mut u32).write_volatile(1 << 14);
                     }
+                }
+            })
+        }
+    }
+}
+
+#[cfg(all(
+    feature = "uart",
+    not(any(feature = "esp32", feature = "esp32s2", feature = "esp8266"))
+))]
+mod uart_printer {
+    trait Functions {
+        const TX_ONE_CHAR: usize;
+        const CHUNK_SIZE: usize = 32;
+
+        fn tx_byte(b: u8) {
+            unsafe {
+                let tx_one_char: unsafe extern "C" fn(u8) -> i32 =
+                    core::mem::transmute(Self::TX_ONE_CHAR);
+                tx_one_char(b);
+            }
+        }
+
+        fn flush();
+    }
+
+    struct Device;
+
+    #[cfg(feature = "esp32c2")]
+    impl Functions for Device {
+        const TX_ONE_CHAR: usize = 0x4000_005C;
+
+        fn flush() {
+            // tx_one_char waits for empty
+        }
+    }
+
+    #[cfg(feature = "esp32c3")]
+    impl Functions for Device {
+        const TX_ONE_CHAR: usize = 0x4000_0068;
+
+        fn flush() {
+            unsafe {
+                const TX_FLUSH: usize = 0x4000_0080;
+                const GET_CHANNEL: usize = 0x4000_058C;
+                let tx_flush: unsafe extern "C" fn(u8) = core::mem::transmute(TX_FLUSH);
+                let get_channel: unsafe extern "C" fn() -> u8 = core::mem::transmute(GET_CHANNEL);
+
+                const G_USB_PRINT_ADDR: usize = 0x3FCD_FFD0;
+                let g_usb_print = G_USB_PRINT_ADDR as *mut bool;
+
+                let channel = if *g_usb_print {
+                    // Flush USB-JTAG
+                    3
+                } else {
+                    get_channel()
+                };
+                tx_flush(channel);
+            }
+        }
+    }
+
+    #[cfg(feature = "esp32s3")]
+    impl Functions for Device {
+        const TX_ONE_CHAR: usize = 0x4000_0648;
+
+        fn flush() {
+            unsafe {
+                const TX_FLUSH: usize = 0x4000_0690;
+                const GET_CHANNEL: usize = 0x4000_1A58;
+                let tx_flush: unsafe extern "C" fn(u8) = core::mem::transmute(TX_FLUSH);
+                let get_channel: unsafe extern "C" fn() -> u8 = core::mem::transmute(GET_CHANNEL);
+
+                const G_USB_PRINT_ADDR: usize = 0x3FCE_FFB8;
+                let g_usb_print = G_USB_PRINT_ADDR as *mut bool;
+
+                let channel = if *g_usb_print {
+                    // Flush USB-JTAG
+                    4
+                } else {
+                    get_channel()
+                };
+                tx_flush(channel);
+            }
+        }
+    }
+
+    #[cfg(any(feature = "esp32c6", feature = "esp32h2"))]
+    impl Functions for Device {
+        const TX_ONE_CHAR: usize = 0x4000_0058;
+
+        fn flush() {
+            unsafe {
+                const TX_FLUSH: usize = 0x4000_0074;
+                const GET_CHANNEL: usize = 0x4000_003C;
+
+                let tx_flush: unsafe extern "C" fn(u8) = core::mem::transmute(TX_FLUSH);
+                let get_channel: unsafe extern "C" fn() -> u8 = core::mem::transmute(GET_CHANNEL);
+
+                tx_flush(get_channel());
+            }
+        }
+    }
+
+    impl super::Printer {
+        pub fn write_bytes(&mut self, bytes: &[u8]) {
+            super::with(|| {
+                for chunk in bytes.chunks(Device::CHUNK_SIZE) {
+                    for &b in chunk {
+                        Device::tx_byte(b);
+                    }
+
+                    Device::flush();
                 }
             })
         }

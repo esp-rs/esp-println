@@ -84,5 +84,5 @@ unsafe impl defmt::Logger for Logger {
 }
 
 fn do_write(bytes: &[u8]) {
-    Printer.write_bytes(bytes)
+    Printer.write_bytes_assume_cs(bytes)
 }

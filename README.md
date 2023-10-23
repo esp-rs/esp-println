@@ -62,6 +62,15 @@ You can also use the `defmt-raw` feature that allows using any encoding provided
 does not add extra framing. Using this feature requires some care as the defmt output may become
 unrecoverably mangled when other data are printed.
 
+Follow the [defmt book's setup instructions](https://defmt.ferrous-systems.com/setup) on how to
+set up defmt. Remember, the global logger is already installed for you by esp-println!
+
+### Troubleshooting linker errors
+
+If you experience linker errors, make sure you have *some* reference to `esp_println` in your code.
+If you don't use `esp_println` directly, you'll need to add e.g. `use esp_println as _;` to your
+import statements. This ensures that the global logger will not be removed by the compiler.
+
 ## License
 
 Licensed under either of:

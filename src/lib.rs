@@ -90,7 +90,15 @@ mod rtt_printer {
     }
 }
 
-#[cfg(feature = "jtag_serial")]
+#[cfg(all(
+    feature = "jtag_serial",
+    any(
+        feature = "esp32c3",
+        feature = "esp32c6",
+        feature = "esp32h2",
+        feature = "esp32s3"
+    )
+))]
 mod serial_jtag_printer {
     #[cfg(feature = "esp32c3")]
     const SERIAL_JTAG_FIFO_REG: usize = 0x6004_3000;
@@ -122,12 +130,6 @@ mod serial_jtag_printer {
         unsafe { fifo.write_volatile(byte as u32) }
     }
 
-    #[cfg(any(
-        feature = "esp32c3",
-        feature = "esp32c6",
-        feature = "esp32h2",
-        feature = "esp32s3"
-    ))]
     impl super::Printer {
         pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {

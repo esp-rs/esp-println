@@ -114,7 +114,7 @@ mod serial_jtag_printer {
 
     fn fifo_clear() -> bool {
         let conf = SERIAL_JTAG_CONF_REG as *mut u32;
-        unsafe { conf.read_volatile() & 0b011 != 0b000 }
+        unsafe { conf.read_volatile() & 0b010 != 0b000 }
     }
 
     fn fifo_write(byte: u8) {

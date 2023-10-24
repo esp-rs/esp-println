@@ -76,16 +76,20 @@ impl core::fmt::Write for Printer {
     }
 }
 
+impl Printer {
+    pub fn write_bytes(&mut self, bytes: &[u8]) {
+        with(|| self.write_bytes_assume_cs(bytes))
+    }
+}
+
 #[cfg(feature = "rtt")]
 mod rtt_printer {
     impl super::Printer {
-        pub fn write_bytes(&mut self, bytes: &[u8]) {
-            super::with(|| {
-                let count = crate::rtt::write_bytes_internal(bytes);
-                if count < bytes.len() {
-                    crate::rtt::write_bytes_internal(&bytes[count..]);
-                }
-            })
+        pub(crate) fn write_bytes_assume_cs(&mut self, bytes: &[u8]) {
+            let count = crate::rtt::write_bytes_internal(bytes);
+            if count < bytes.len() {
+                crate::rtt::write_bytes_internal(&bytes[count..]);
+            }
         }
     }
 }
@@ -131,33 +135,31 @@ mod serial_jtag_printer {
     }
 
     impl super::Printer {
-        pub fn write_bytes(&mut self, bytes: &[u8]) {
-            super::with(|| {
-                const TIMEOUT_ITERATIONS: usize = 50_000;
+        pub fn write_bytes_assume_cs(&mut self, bytes: &[u8]) {
+            const TIMEOUT_ITERATIONS: usize = 50_000;
 
-                if !fifo_clear() {
-                    // Still wasn't able to drain the FIFO - early return
-                    // This is important so we don't block forever if there is no host attached.
-                    return;
+            if !fifo_clear() {
+                // Still wasn't able to drain the FIFO - early return
+                // This is important so we don't block forever if there is no host attached.
+                return;
+            }
+
+            for chunk in bytes.chunks(64) {
+                for &b in chunk {
+                    fifo_write(b);
                 }
 
-                for chunk in bytes.chunks(64) {
-                    for &b in chunk {
-                        fifo_write(b);
-                    }
+                fifo_flush();
 
-                    fifo_flush();
-
-                    // wait for fifo to clear
-                    let mut timeout = TIMEOUT_ITERATIONS;
-                    while !fifo_clear() {
-                        if timeout == 0 {
-                            return;
-                        }
-                        timeout -= 1;
+                // wait for fifo to clear
+                let mut timeout = TIMEOUT_ITERATIONS;
+                while !fifo_clear() {
+                    if timeout == 0 {
+                        return;
                     }
+                    timeout -= 1;
                 }
-            })
+            }
         }
     }
 }
@@ -166,16 +168,14 @@ mod serial_jtag_printer {
 mod uart_printer {
     const UART_TX_ONE_CHAR: usize = 0x4000_9200;
     impl super::Printer {
-        pub fn write_bytes(&mut self, bytes: &[u8]) {
-            super::with(|| {
-                for &b in bytes {
-                    unsafe {
-                        let uart_tx_one_char: unsafe extern "C" fn(u8) -> i32 =
-                            core::mem::transmute(UART_TX_ONE_CHAR);
-                        uart_tx_one_char(b)
-                    };
-                }
-            })
+        pub fn write_bytes_assume_cs(&mut self, bytes: &[u8]) {
+            for &b in bytes {
+                unsafe {
+                    let uart_tx_one_char: unsafe extern "C" fn(u8) -> i32 =
+                        core::mem::transmute(UART_TX_ONE_CHAR);
+                    uart_tx_one_char(b)
+                };
+            }
         }
     }
 }
@@ -184,25 +184,23 @@ mod uart_printer {
 mod uart_printer {
     const UART_TX_ONE_CHAR: usize = 0x4000_9200;
     impl super::Printer {
-        pub fn write_bytes(&mut self, bytes: &[u8]) {
-            super::with(|| {
-                // On ESP32-S2 the UART_TX_ONE_CHAR ROM-function seems to have some issues.
-                for chunk in bytes.chunks(64) {
-                    for &b in chunk {
-                        unsafe {
-                            // write FIFO
-                            (0x3f400000 as *mut u32).write_volatile(b as u32);
-                        };
-                    }
-
-                    // wait for TX_DONE
-                    while unsafe { (0x3f400004 as *const u32).read_volatile() } & (1 << 14) == 0 {}
+        pub fn write_bytes_assume_cs(&mut self, bytes: &[u8]) {
+            // On ESP32-S2 the UART_TX_ONE_CHAR ROM-function seems to have some issues.
+            for chunk in bytes.chunks(64) {
+                for &b in chunk {
                     unsafe {
-                        // reset TX_DONE
-                        (0x3f400010 as *mut u32).write_volatile(1 << 14);
-                    }
+                        // write FIFO
+                        (0x3f400000 as *mut u32).write_volatile(b as u32);
+                    };
                 }
-            })
+
+                // wait for TX_DONE
+                while unsafe { (0x3f400004 as *const u32).read_volatile() } & (1 << 14) == 0 {}
+                unsafe {
+                    // reset TX_DONE
+                    (0x3f400010 as *mut u32).write_volatile(1 << 14);
+                }
+            }
         }
     }
 }
@@ -306,16 +304,14 @@ mod uart_printer {
     }
 
     impl super::Printer {
-        pub fn write_bytes(&mut self, bytes: &[u8]) {
-            super::with(|| {
-                for chunk in bytes.chunks(Device::CHUNK_SIZE) {
-                    for &b in chunk {
-                        Device::tx_byte(b);
-                    }
-
-                    Device::flush();
+        pub fn write_bytes_assume_cs(&mut self, bytes: &[u8]) {
+            for chunk in bytes.chunks(Device::CHUNK_SIZE) {
+                for &b in chunk {
+                    Device::tx_byte(b);
                 }
-            })
+
+                Device::flush();
+            }
         }
     }
 }

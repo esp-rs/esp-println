@@ -90,7 +90,15 @@ mod rtt_printer {
     }
 }
 
-#[cfg(feature = "jtag_serial")]
+#[cfg(all(
+    feature = "jtag_serial",
+    any(
+        feature = "esp32c3",
+        feature = "esp32c6",
+        feature = "esp32h2",
+        feature = "esp32s3"
+    )
+))]
 mod serial_jtag_printer {
     #[cfg(feature = "esp32c3")]
     const SERIAL_JTAG_FIFO_REG: usize = 0x6004_3000;
@@ -107,41 +115,46 @@ mod serial_jtag_printer {
     #[cfg(feature = "esp32s3")]
     const SERIAL_JTAG_CONF_REG: usize = 0x6003_8004;
 
-    #[cfg(any(
-        feature = "esp32c3",
-        feature = "esp32c6",
-        feature = "esp32h2",
-        feature = "esp32s3"
-    ))]
+    fn fifo_flush() {
+        let conf = SERIAL_JTAG_CONF_REG as *mut u32;
+        unsafe { conf.write_volatile(0b001) };
+    }
+
+    fn fifo_clear() -> bool {
+        let conf = SERIAL_JTAG_CONF_REG as *mut u32;
+        unsafe { conf.read_volatile() & 0b010 != 0b000 }
+    }
+
+    fn fifo_write(byte: u8) {
+        let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
+        unsafe { fifo.write_volatile(byte as u32) }
+    }
+
     impl super::Printer {
         pub fn write_bytes(&mut self, bytes: &[u8]) {
             super::with(|| {
-                const TIMEOUT_ITERATIONS: usize = 5_000;
+                const TIMEOUT_ITERATIONS: usize = 50_000;
 
-                let fifo = SERIAL_JTAG_FIFO_REG as *mut u32;
-                let conf = SERIAL_JTAG_CONF_REG as *mut u32;
-
-                if unsafe { conf.read_volatile() } & 0b011 == 0b000 {
-                    // still wasn't able to drain the FIFO - early return
+                if !fifo_clear() {
+                    // Still wasn't able to drain the FIFO - early return
+                    // This is important so we don't block forever if there is no host attached.
                     return;
                 }
 
-                // todo 64 byte chunks max
-                for chunk in bytes.chunks(32) {
-                    unsafe {
-                        for &b in chunk {
-                            fifo.write_volatile(b as u32);
-                        }
-                        conf.write_volatile(0b001);
+                for chunk in bytes.chunks(64) {
+                    for &b in chunk {
+                        fifo_write(b);
+                    }
 
-                        let mut timeout = TIMEOUT_ITERATIONS;
-                        while conf.read_volatile() & 0b011 == 0b000 {
-                            // wait
-                            timeout -= 1;
-                            if timeout == 0 {
-                                return;
-                            }
+                    fifo_flush();
+
+                    // wait for fifo to clear
+                    let mut timeout = TIMEOUT_ITERATIONS;
+                    while !fifo_clear() {
+                        if timeout == 0 {
+                            return;
                         }
+                        timeout -= 1;
                     }
                 }
             })

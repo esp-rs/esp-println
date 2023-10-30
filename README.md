@@ -5,23 +5,18 @@ Provides `print!`, `println!` and `dbg!` implementations for various Espressif d
 - Supports ESP32, ESP32-C2/C3/C6, ESP32-H2, ESP32-S2/S3, and ESP8266
 - Dependency free (not even depending on `esp-hal`, one optional dependency is `log`, another is `critical-section`)
 - Supports JTAG-Serial output where available
-- Supports RTT (lacking working RTT hosts besides _probe-rs_ for ESP32-C3)
+- Supports RTT (lacking working RTT hosts besides _probe-rs_ for ESP32-C3 and ESP32-C6)
 - `no-op` features turns printing into a no-op
-
-## RTT on ESP32-C3 / ESP32-C6
-
-The _cli_ utility should work for flashing and showing RTT logs on ESP32-C3 by using it's `run` command.
-You need to use the `direct-boot` feature of the HAL to flash via _probe-rs_.
 
 ## Usage
 
 In your `Cargo.toml`, under `[dependencies]`, add:
 
 ```
-esp-println = { version = "0.3.1", features = ["esp32"] }
+cargo add esp-println --features esp32
 ```
 
-Choose a recent version and your chipset.
+Replace `esp32` with your target, if necessary.
 
 Then in your program:
 

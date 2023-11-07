@@ -2,16 +2,13 @@
 // Implementation taken from defmt-rtt, with a custom framing prefix
 
 #[cfg(feature = "critical-section")]
-use core::sync::atomic::{AtomicBool, Ordering};
-
-#[cfg(feature = "critical-section")]
 use critical_section::RestoreState;
 
 use super::Printer;
 
 /// Global logger lock.
 #[cfg(feature = "critical-section")]
-static TAKEN: AtomicBool = AtomicBool::new(false);
+static mut TAKEN: bool = false;
 #[cfg(feature = "critical-section")]
 static mut CS_RESTORE: RestoreState = RestoreState::invalid();
 static mut ENCODER: defmt::Encoder = defmt::Encoder::new();
@@ -21,24 +18,25 @@ pub struct Logger;
 unsafe impl defmt::Logger for Logger {
     fn acquire() {
         #[cfg(feature = "critical-section")]
-        {
+        unsafe {
             // safety: Must be paired with corresponding call to release(), see below
-            let restore = unsafe { critical_section::acquire() };
+            let restore = critical_section::acquire();
 
             // safety: accessing the `static mut` is OK because we have acquired a critical
             // section.
-            if TAKEN.load(Ordering::Relaxed) {
+            if TAKEN {
                 panic!("defmt logger taken reentrantly")
             }
 
             // safety: accessing the `static mut` is OK because we have acquired a critical
             // section.
-            TAKEN.store(true, Ordering::Relaxed);
+            TAKEN = true;
 
             // safety: accessing the `static mut` is OK because we have acquired a critical
             // section.
-            unsafe { CS_RESTORE = restore };
+            CS_RESTORE = restore;
         }
+
         // If not disabled, write a non-UTF8 sequence to indicate the start of a defmt
         // frame. We need this to distinguish defmt frames from other data that
         // might be written to the printer.
@@ -63,7 +61,7 @@ unsafe impl defmt::Logger for Logger {
 
             // safety: accessing the `static mut` is OK because we have acquired a critical
             // section.
-            TAKEN.store(false, Ordering::Relaxed);
+            TAKEN = false;
 
             // safety: accessing the `static mut` is OK because we have acquired a critical
             // section.

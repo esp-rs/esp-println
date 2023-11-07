@@ -9,9 +9,8 @@ const LOG_TARGETS: Option<&'static str> = option_env!("ESP_LOGTARGETS");
 pub fn init_logger(level: log::LevelFilter) {
     unsafe {
         log::set_logger_racy(&EspLogger).unwrap();
+        log::set_max_level_racy(level);
     }
-
-    log::set_max_level(level);
 }
 
 pub fn init_logger_from_env() {
@@ -23,7 +22,7 @@ pub fn init_logger_from_env() {
 
     if let Some(lvl) = LEVEL {
         let level = LevelFilter::from_str(lvl).unwrap_or_else(|_| LevelFilter::Off);
-        log::set_max_level(level);
+        unsafe { log::set_max_level_racy(level) };
     }
 }
 

@@ -4,8 +4,6 @@
 /// (It just doesn't check the read_offset).
 /// But for normal logging purposes that should be good enough for now.
 
-static mut BUFFER: [u8; 1024] = [0u8; 1024];
-
 #[repr(C)]
 struct Buffer {
     name: *const u8,
@@ -45,6 +43,9 @@ static CHANNEL_NAME: [u8; 6] = *b"defmt\0";
 #[cfg(not(feature = "defmt-raw"))]
 #[link_section = ".data"]
 static CHANNEL_NAME: [u8; 9] = *b"Terminal\0";
+
+#[link_section = ".bss"]
+static mut BUFFER: [u8; 1024] = [0u8; 1024];
 
 #[no_mangle]
 pub static mut _SEGGER_RTT: ControlBlock = ControlBlock {

@@ -1,3 +1,66 @@
+//! A library that provides `print!`, `println!`, `dbg!` implementations and
+//! logging capabilities for Espressif devices.
+//!
+//! - Supports all Espressif devices.
+//! - Supports different communication methods:
+//!     - UART (Default)
+//!     - JTAG-Serial (Only available in ESP32-C3, ESP32-C6, ESP32-H2, ESP32-S3)
+//!     - [RTT]
+//!     - No-op: Turns printing into a no-op
+//! - Supports [`defmt`] backend
+//!
+//! # Using `esp-println` as a Library:
+//!
+//! ```toml
+//! esp-println = { version = "0.7.0", features = ["esp32c2"] }
+//! ```
+//! or `cargo add esp-println --features esp32c2`
+//!
+//! Its important to specify your target as feature.
+//!
+//! # Features
+//!
+//! - There is one feature for each supported target: `esp32`, `esp32c2`,
+//!   `esp32c3`, `esp32c6`, esp32h2`, `esp32s2`, `esp32s3` and `esp8266`.
+//!    - One of these features must be enabled.
+//!    - Only one of these features can be enabled at a time.
+//! - There is one feature for each supported communication method: `uart`,
+//!   `jtag-serial` and `rtt` `no-op`.
+//!     - Only one of these features can be enabled at a time.
+//! - `critical-section` enables critical sections.
+//! - `colors` enable colored output.
+//! - There is one feature for each [`defmt` supported encoding]:
+//!    - `defmt`: Uses [rzCOBS] encoding
+//!    - `defmt-raw`: Raw data, that no encoding.
+//!
+//! ## Default Features
+//!
+//! By default, we use the `uart`, `critial-section` and `colors` features.
+//! Which means that it will print to the UART, use critical sections and output
+//! messages will be colored.
+//!
+//! If we want to use a communication method that is not `uart`, the default
+//! one, we need to [disable the default features].
+//!
+//! # `esp-backtrace`
+//!
+//! `esp-println` is usually used alongside [`esp-backtrace`]. When using this
+//! two crates together, make sure to use the same communication methods for
+//! both dependencies. Table matching features:
+//!
+//! | `esp-println` | `esp-backtrace`      |
+//! | ------------- | -------------------- |
+//! | `uart`        | `print- uart`        |
+//! | `jtag-serial` | `print- jtag-serial` |
+//! | `rtt`         | `print- rtt`         |
+//!
+//! [`defmt`]: https://github.com/knurling-rs/defmt
+//! [`defmt` supported encoding]: https://defmt.ferrous-systems.com/encoding.html?highlight=rzcobs#encoding
+//! [rzCOBS]: https://github.com/Dirbaio/rzcobs
+//! [rtt]: https://crates.io/crates/espflash
+//! [disable the default features]: https://doc.rust-lang.org/cargo/reference/features.html#the-default-feature
+//! [`esp-backtrace`]: https://github.com/esp-rs/esp-backtrace
+
 #![no_std]
 
 #[cfg(any(feature = "defmt-espflash", feature = "defmt-raw"))]

@@ -30,8 +30,8 @@
 //! - `critical-section` enables critical sections.
 //! - `colors` enable colored output.
 //! - There is one feature for each [`defmt` supported encoding]:
-//!    - `defmt`: Uses [rzCOBS] encoding
-//!    - `defmt-raw`: Raw data, that no encoding.
+//!    - `defmt`: Uses [rzCOBS] encoding and adds framing. This is intended to be used with `espflash`
+//!    - `defmt-raw`: Raw defmt output without additional framing.
 //!
 //! ## Default Features
 //!

@@ -50,9 +50,9 @@
 //!
 //! | `esp-println` | `esp-backtrace`      |
 //! | ------------- | -------------------- |
-//! | `uart`        | `print- uart`        |
-//! | `jtag-serial` | `print- jtag-serial` |
-//! | `rtt`         | `print- rtt`         |
+//! | `uart`        | `print-uart`        |
+//! | `jtag_serial` | `print-jtag-serial` |
+//! | `rtt`         | `print-rtt`         |
 //!
 //! [`defmt`]: https://github.com/knurling-rs/defmt
 //! [`defmt` supported encoding]: https://defmt.ferrous-systems.com/encoding.html?highlight=rzcobs#encoding

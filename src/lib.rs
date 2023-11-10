@@ -30,7 +30,9 @@
 //! - `critical-section` enables critical sections.
 //! - `colors` enable colored output.
 //! - There is one feature for each [`defmt` supported encoding]:
-//!    - `defmt`: Uses [rzCOBS] encoding and adds framing. This is intended to be used with `espflash`
+//!    - `defmt`: Uses [rzCOBS] encoding and adds framing. This is intended to
+//!      be used with [`espflash`] (See `-L/--log-format` argument of `flash` or
+//!      `monitor` subcommands of `espflash` and `cargo-espflash`)
 //!    - `defmt-raw`: Raw defmt output without additional framing.
 //!
 //! ## Default Features
@@ -57,6 +59,7 @@
 //! [`defmt`]: https://github.com/knurling-rs/defmt
 //! [`defmt` supported encoding]: https://defmt.ferrous-systems.com/encoding.html?highlight=rzcobs#encoding
 //! [rzCOBS]: https://github.com/Dirbaio/rzcobs
+//! [`espflash`]: https://github.com/esp-rs/espflash
 //! [rtt]: https://crates.io/crates/espflash
 //! [disable the default features]: https://doc.rust-lang.org/cargo/reference/features.html#the-default-feature
 //! [`esp-backtrace`]: https://github.com/esp-rs/esp-backtrace

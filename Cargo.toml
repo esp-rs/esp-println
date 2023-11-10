@@ -42,7 +42,9 @@ rtt         = []
 no-op       = []
 
 # Enables a `defmt` backend usable with espflash. We force rzcobs encoding to simplify implementation
-defmt = ["dep:defmt", "defmt?/encoding-rzcobs"]
+defmt-espflash = ["dep:defmt", "defmt?/encoding-rzcobs"]
+
+# Enables `defmt` with raw encoding.
 defmt-raw = ["dep:defmt", "defmt?/encoding-raw"]
 
 # logging sub-features

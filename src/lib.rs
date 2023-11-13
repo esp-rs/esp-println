@@ -78,7 +78,10 @@ impl core::fmt::Write for Printer {
 
 impl Printer {
     pub fn write_bytes(&mut self, bytes: &[u8]) {
-        with(|| self.write_bytes_assume_cs(bytes))
+        with(|| {
+            self.write_bytes_assume_cs(bytes);
+            self.flush();
+        })
     }
 }
 
@@ -91,6 +94,8 @@ mod rtt_printer {
                 crate::rtt::write_bytes_internal(&bytes[count..]);
             }
         }
+
+        pub fn flush(&mut self) {}
     }
 }
 
@@ -119,6 +124,10 @@ mod serial_jtag_printer {
     #[cfg(feature = "esp32s3")]
     const SERIAL_JTAG_CONF_REG: usize = 0x6003_8004;
 
+    /// A previous wait has timed out. We use this flag to avoid blocking
+    /// forever if there is no host attached.
+    static mut TIMED_OUT: bool = false;
+
     fn fifo_flush() {
         let conf = SERIAL_JTAG_CONF_REG as *mut u32;
         unsafe { conf.write_volatile(0b001) };
@@ -136,29 +145,35 @@ mod serial_jtag_printer {
 
     impl super::Printer {
         pub fn write_bytes_assume_cs(&mut self, bytes: &[u8]) {
-            const TIMEOUT_ITERATIONS: usize = 50_000;
-
-            if !fifo_clear() {
-                // Still wasn't able to drain the FIFO - early return
-                // This is important so we don't block forever if there is no host attached.
-                return;
+            if unsafe { TIMED_OUT } {
+                if !fifo_clear() {
+                    // Still wasn't able to drain the FIFO - early return
+                    // This is important so we don't block forever if there is no host attached.
+                    return;
+                }
             }
 
-            for chunk in bytes.chunks(64) {
-                for &b in chunk {
-                    fifo_write(b);
+            for &b in bytes {
+                fifo_write(b);
+                if !fifo_clear() {
+                    self.flush();
                 }
+            }
+        }
 
-                fifo_flush();
+        pub fn flush(&mut self) {
+            const TIMEOUT_ITERATIONS: usize = 50_000;
 
-                // wait for fifo to clear
-                let mut timeout = TIMEOUT_ITERATIONS;
-                while !fifo_clear() {
-                    if timeout == 0 {
-                        return;
-                    }
-                    timeout -= 1;
+            fifo_flush();
+
+            // wait for fifo to clear
+            let mut timeout = TIMEOUT_ITERATIONS;
+            while !fifo_clear() {
+                if timeout == 0 {
+                    unsafe { TIMED_OUT = true };
+                    return;
                 }
+                timeout -= 1;
             }
         }
     }
@@ -177,6 +192,8 @@ mod uart_printer {
                 };
             }
         }
+
+        pub fn flush(&mut self) {}
     }
 }
 
@@ -202,6 +219,8 @@ mod uart_printer {
                 }
             }
         }
+
+        pub fn flush(&mut self) {}
     }
 }
 
@@ -313,6 +332,8 @@ mod uart_printer {
                 Device::flush();
             }
         }
+
+        pub fn flush(&mut self) {}
     }
 }
 

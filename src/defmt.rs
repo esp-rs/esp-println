@@ -40,7 +40,7 @@ unsafe impl defmt::Logger for Logger {
         // If not disabled, write a non-UTF8 sequence to indicate the start of a defmt
         // frame. We need this to distinguish defmt frames from other data that
         // might be written to the printer.
-        #[cfg(not(feature = "defmt-raw"))]
+        #[cfg(feature = "defmt-espflash")]
         do_write(&[0xFF, 0x00]);
 
         // safety: accessing the `static mut` is OK because we have acquired a critical

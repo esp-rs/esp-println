@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        logger: ["", ",log", ",defmt", ",defmt-raw"]
+        logger: ["", ",log", ",defmt-espflash", ",defmt-raw"]
         color: [""]
         critical-section: ["", ",critical-section"]
         include:

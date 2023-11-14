@@ -53,6 +53,8 @@ unsafe impl defmt::Logger for Logger {
         // section.
         ENCODER.end_frame(do_write);
 
+        Printer.flush();
+
         #[cfg(feature = "critical-section")]
         {
             // We don't need to write a custom end-of-frame sequence because:
@@ -72,7 +74,9 @@ unsafe impl defmt::Logger for Logger {
         }
     }
 
-    unsafe fn flush() {}
+    unsafe fn flush() {
+        Printer.flush();
+    }
 
     unsafe fn write(bytes: &[u8]) {
         // safety: accessing the `static mut` is OK because we have acquired a critical

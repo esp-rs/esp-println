@@ -128,9 +128,6 @@ mod serial_jtag_printer {
     /// forever if there is no host attached.
     static mut TIMED_OUT: bool = false;
 
-    /// How many times flush has been called since last timeout
-    static mut NUM_CALLS_AFTER_TIME_OUT: u8 = 0;
-
     fn fifo_flush() {
         let conf = SERIAL_JTAG_CONF_REG as *mut u32;
         unsafe { conf.write_volatile(0b001) };
@@ -153,6 +150,11 @@ mod serial_jtag_printer {
                     // Still wasn't able to drain the FIFO - early return
                     // This is important so we don't block forever if there is no host attached.
                     return;
+                } else {
+                    unsafe {
+                        // Good to go!
+                        TIMED_OUT = false;
+                    }
                 }
             }
 
@@ -166,22 +168,6 @@ mod serial_jtag_printer {
 
         pub fn flush(&mut self) {
             const TIMEOUT_ITERATIONS: usize = 1_000;
-
-            if unsafe { TIMED_OUT } {
-                if !fifo_clear() & unsafe { NUM_CALLS_AFTER_TIME_OUT < 20 } {
-                    // Still wasn't able to drain the FIFO - early return
-                    // This is important so we don't block forever if there is no host attached.
-                    unsafe {
-                        NUM_CALLS_AFTER_TIME_OUT += 1;
-                    }
-                    return;
-                } else {
-                    unsafe {
-                        TIMED_OUT = false;
-                        NUM_CALLS_AFTER_TIME_OUT = 0;
-                    }
-                }
-            }
 
             fifo_flush();
 

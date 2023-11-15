@@ -40,11 +40,15 @@ You can now `println!("Hello world")` as usual.
    - Only effective when using the `log` feature.
 - `critical-section` enables critical sections.
 - There are two ways to use this library with [`defmt`]:
-   - `defmt-espflash`: This is intended to be used with [`espflash`], see `-L/--log-format` argument of `flash` or `monitor` subcommands of `espflash` and `cargo-espflash`
+   - `defmt-espflash`: This is intended to be used with [`espflash`], see `-L/--log-format` argument of `flash` or `monitor` subcommands of `espflash` and `cargo-espflash`.
      Uses [rzCOBS] encoding and adds framing.
    - `defmt-raw`: Raw defmt output without additional framing. ⚠️ Be careful when using this feature: you must only write
      output using `defmt` macros, or you may irrecoverably corrupt the output stream! This means that even the bootloader's output
      must be disabled.
+
+   `defmt` features can also be used with [`probe-rs`].
+
+[`probe-rs`]: https://probe.rs/
 
 ## Default Features
 

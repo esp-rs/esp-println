@@ -46,6 +46,8 @@ fn main() {
 
     // Ensure that, if the `colors` is used with `log`.`
     if cfg!(feature = "colors") && !cfg!(feature = "log") {
-        println!("cargo:warning=The `colors` feature is only effective when using the `log` feature");
+        println!(
+            "cargo:warning=The `colors` feature is only effective when using the `log` feature"
+        );
     }
 }

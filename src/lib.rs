@@ -1,3 +1,4 @@
+#![doc = include_str!("../README.md")]
 #![no_std]
 
 #[cfg(any(feature = "defmt-espflash", feature = "defmt-raw"))]

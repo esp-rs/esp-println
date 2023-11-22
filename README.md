@@ -50,7 +50,7 @@ If this simple logger implementation isn't sufficient for your needs you can imp
 
 Using the `defmt-espflash` feature, esp-println will install a defmt global logger. The logger will
 output to the same data stream as `println!()`, and adds framing bytes so it can be used even with
-other, non-defmt output. Using the `defmt` feature automatically uses the Rzcobs encoding and does
+other, non-defmt output. Using the `defmt-espflash` feature automatically uses the Rzcobs encoding and does
 not allow changing the encoding.
 
 You can also use the `defmt-raw` feature that allows using any encoding provided by defmt, but

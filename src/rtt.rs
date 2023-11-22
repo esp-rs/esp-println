@@ -32,15 +32,15 @@ pub struct ControlBlock {
     up: Buffer,
 }
 
-// When the defmt-raw feature is enabled along with rtt, we know we will be
+// When one of the defmt features is enabled along with rtt, we know we will be
 // interacting with a debugger by setting the channel name appropriatley we
 // allow the host to infer the data format of the stream. We also set the link
 // section of this name so the entire header can fit into RAM for easier
 // debugger access.
-#[cfg(feature = "defmt-raw")]
+#[cfg(any(feature = "defmt-raw", feature = "defmt-espflash"))]
 #[link_section = ".data"]
 static CHANNEL_NAME: [u8; 6] = *b"defmt\0";
-#[cfg(not(feature = "defmt-raw"))]
+#[cfg(not(any(feature = "defmt-raw", feature = "defmt-espflash")))]
 #[link_section = ".data"]
 static CHANNEL_NAME: [u8; 9] = *b"Terminal\0";
 

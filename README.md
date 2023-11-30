@@ -46,7 +46,7 @@ You can now `println!("Hello world")` as usual.
      output using `defmt` macros, or you may irrecoverably corrupt the output stream! This means that even the bootloader's output
      must be disabled.
 
-   `defmt` features can also be used with [`probe-rs`].
+`defmt` features can also be used with [`probe-rs`].
 
 [`probe-rs`]: https://probe.rs/
 

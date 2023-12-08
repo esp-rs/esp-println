@@ -110,7 +110,7 @@ mod rtt_printer {
     )
 ))]
 mod serial_jtag_printer {
-    use core::sync::atomic::{AtomicBool, Ordering};
+    use portable_atomic::{AtomicBool, Ordering};
 
     #[cfg(feature = "esp32c3")]
     const SERIAL_JTAG_FIFO_REG: usize = 0x6004_3000;

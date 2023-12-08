@@ -19,6 +19,7 @@ cargo-args = ["-Z", "build-std=core"]
 log = { version = "0.4.17", optional = true }
 defmt = { version = "=0.3.5", optional = true }
 critical-section = { version = "1.1.1", optional = true }
+portable-atomic = { version = "1.5.1", default-features = false, optional = true }
 
 [features]
 default = ["uart", "critical-section", "colors"]
@@ -37,7 +38,7 @@ esp8266 = []
 # You must enable exactly 1 of the below features to enable to intended
 # communication method (note that "uart" is enabled by default):
 uart        = []
-jtag_serial = [] # C3, C6, H2, and S3 only!
+jtag_serial = ["portable-atomic"] # C3, C6, H2, and S3 only!
 rtt         = []
 no-op       = []
 

@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         chip: [esp32c2, esp32c3, esp32c6, esp32h2]
-        printer: ["rtt", "uart"]
+        printer: ["uart"]
         include:
           - chip: esp32c3
             printer: "jtag_serial"
@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
         chip: [esp32, esp32s2, esp32s3]
-        printer: ["rtt", "uart"]
+        printer: ["uart"]
         include:
           - chip: esp32s3
             printer: "jtag_serial"
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        logger: ["", ",log", ",defmt-espflash", ",defmt-raw"]
+        logger: ["", ",log", ",defmt-espflash"]
         color: [""]
         critical-section: ["", ",critical-section"]
         include:

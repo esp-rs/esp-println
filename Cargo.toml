@@ -39,14 +39,10 @@ esp8266 = []
 # communication method (note that "uart" is enabled by default):
 uart        = []
 jtag_serial = ["portable-atomic"] # C3, C6, H2, and S3 only!
-rtt         = []
 no-op       = []
 
 # Enables a `defmt` backend usable with espflash. We force rzcobs encoding to simplify implementation
 defmt-espflash = ["dep:defmt", "defmt?/encoding-rzcobs"]
-
-# Enables raw (unaltered) `defmt`.
-defmt-raw = ["dep:defmt"]
 
 # logging sub-features
 colors      = []

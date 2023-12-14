@@ -17,11 +17,7 @@ fn main() {
     };
 
     // Ensure that only a single communication method is specified
-    let method_features = [
-        cfg!(feature = "uart"),
-        cfg!(feature = "jtag_serial"),
-        cfg!(feature = "rtt"),
-    ];
+    let method_features = [cfg!(feature = "uart"), cfg!(feature = "jtag_serial")];
 
     match method_features.iter().filter(|&&f| f).count() {
         1 => {}

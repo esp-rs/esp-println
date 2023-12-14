@@ -6,7 +6,6 @@ logging capabilities for Espressif devices.
 - Supports different communication methods:
     - UART (Default)
     - JTAG-Serial (Only available in ESP32-C3, ESP32-C6, ESP32-H2, ESP32-S3)
-    - [RTT]
     - No-op: Turns printing into a no-op
 - Supports [`defmt`] backend
 
@@ -32,25 +31,15 @@ You can now `println!("Hello world")` as usual.
   `esp32c3`, `esp32c6`, `esp32h2`, `esp32s2`, `esp32s3` and `esp8266`.
    - One of these features must be enabled.
    - Only one of these features can be enabled at a time.
-- There is one feature for each supported communication method: `uart`,
-  `jtag-serial` and `rtt` `no-op`.
+- There is one feature for each supported communication method: `uart`, `jtag-serial` and `no-op`.
     - Only one of these features can be enabled at a time.
 - `log`: Enables logging using [`log` crate].
 - `colors` enable colored logging.
    - Only effective when using the `log` feature.
 - `critical-section` enables critical sections.
-- There are two ways to use this library with [`defmt`]:
-   - `defmt-espflash`: This is intended to be used with [`espflash`], see `-L/--log-format` argument
-      of `flash` or `monitor` subcommands of `espflash` and `cargo-espflash`. Uses [rzCOBS] encoding
-      and adds framing.
-   - `defmt-raw`: Raw defmt output without additional framing. This feature does not prescribe an
-      encoding method. ⚠️ Be careful when using this feature with `uart` or `jtag-serial`: you must
-      only write output using `defmt` macros, or you may irrecoverably corrupt the output stream!
-      This means that even the bootloader's output must be disabled.
-
-`defmt` features can also be used with [`probe-rs`].
-
-[`probe-rs`]: https://probe.rs/
+- `defmt-espflash`: This is intended to be used with [`espflash`], see `-L/--log-format` argument
+   of `flash` or `monitor` subcommands of `espflash` and `cargo-espflash`. Uses [rzCOBS] encoding
+   and adds framing.
 
 ## Default Features
 
@@ -103,13 +92,11 @@ both dependencies. Table matching features:
 | ------------- | ------------------- |
 | `uart`        | `print-uart`        |
 | `jtag_serial` | `print-jtag-serial` |
-| `rtt`         | `print-rtt`         |
 
 [`defmt`]: https://github.com/knurling-rs/defmt
 [`log` crate]: https://github.com/rust-lang/log
 [rzCOBS]: https://github.com/Dirbaio/rzcobs
 [`espflash`]: https://github.com/esp-rs/espflash
-[rtt]: https://wiki.segger.com/RTT
 [disable the default features]: https://doc.rust-lang.org/cargo/reference/features.html#the-default-feature
 [`esp-backtrace`]: https://github.com/esp-rs/esp-backtrace
 [Implementing a Logger section log documentaion]: https://docs.rs/log/0.4.17/log/#implementing-a-logger

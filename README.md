@@ -91,7 +91,7 @@ both dependencies. Table matching features:
 | `esp-println` | `esp-backtrace`     |
 | ------------- | ------------------- |
 | `uart`        | `print-uart`        |
-| `jtag_serial` | `print-jtag-serial` |
+| `jtag-serial` | `print-jtag-serial` |
 
 [`defmt`]: https://github.com/knurling-rs/defmt
 [`log` crate]: https://github.com/rust-lang/log

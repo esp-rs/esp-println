@@ -2,7 +2,7 @@
     "editor.formatOnSave": true,
     "rust-analyzer.cargo.features": [
         "esp32c3",
-        "jtag_serial",
+        "jtag-serial",
         "log"
     ],
     "rust-analyzer.cargo.target": "riscv32imc-unknown-none-elf",

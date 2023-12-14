@@ -85,7 +85,7 @@ impl Printer {
 }
 
 #[cfg(all(
-    feature = "jtag_serial",
+    feature = "jtag-serial",
     any(
         feature = "esp32c3",
         feature = "esp32c6",

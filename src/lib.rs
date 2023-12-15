@@ -1,12 +1,10 @@
 #![doc = include_str!("../README.md")]
 #![no_std]
 
-#[cfg(any(feature = "defmt-espflash", feature = "defmt-raw"))]
+#[cfg(feature = "defmt-espflash")]
 pub mod defmt;
 #[cfg(feature = "log")]
 pub mod logger;
-#[cfg(feature = "rtt")]
-mod rtt;
 
 #[cfg(not(feature = "no-op"))]
 #[macro_export]
@@ -86,22 +84,8 @@ impl Printer {
     }
 }
 
-#[cfg(feature = "rtt")]
-mod rtt_printer {
-    impl super::Printer {
-        pub(crate) fn write_bytes_assume_cs(&mut self, bytes: &[u8]) {
-            let count = crate::rtt::write_bytes_internal(bytes);
-            if count < bytes.len() {
-                crate::rtt::write_bytes_internal(&bytes[count..]);
-            }
-        }
-
-        pub fn flush(&mut self) {}
-    }
-}
-
 #[cfg(all(
-    feature = "jtag_serial",
+    feature = "jtag-serial",
     any(
         feature = "esp32c3",
         feature = "esp32c6",

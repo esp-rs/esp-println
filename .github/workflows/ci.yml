@@ -12,78 +12,121 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Check
+
   check-riscv:
     name: Check RISC-V
     runs-on: ubuntu-latest
+
     strategy:
+      fail-fast: false
       matrix:
-        chip: [esp32c2, esp32c3, esp32c6, esp32h2]
-        printer: ["uart"]
-        include:
-          - chip: esp32c3
-            printer: "jtag-serial"
-          - chip: esp32c6
-            printer: "jtag-serial"
-          - chip: esp32h2
-            printer: "jtag-serial"
+        device:
+          [
+            { chip: "esp32c2", target: "riscv32imc-unknown-none-elf" },
+            { chip: "esp32c3", target: "riscv32imc-unknown-none-elf" },
+            { chip: "esp32c6", target: "riscv32imac-unknown-none-elf" },
+            { chip: "esp32h2", target: "riscv32imac-unknown-none-elf" },
+          ]
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@v1
         with:
-          target: riscv32imc-unknown-none-elf
+          target: ${{ matrix.device.target }}
           toolchain: nightly
           components: rust-src
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -Zbuild-std=core --no-default-features --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},${{ matrix.printer }}
+
+      # Check the printer features serially rather than in parallel, as the
+      # time to build each feature is *must* shorter than the time to spin
+      # up a new runner:
+
+      - name: Check printer feature (uart)
+        run: cargo build --no-default-features --target=${{ matrix.device.target }} --features=${{ matrix.device.chip }},uart
+
+      - name: Check printer feature (jtag-serial)
+        if: matrix.device.chip != 'esp32c2'
+        run: cargo build --no-default-features --target=${{ matrix.device.target }} --features=${{ matrix.device.chip }},jtag-serial
 
   check-xtensa:
     name: Check Xtensa
     runs-on: ubuntu-latest
+
     strategy:
+      fail-fast: false
       matrix:
-        chip: [esp32, esp32s2, esp32s3]
-        printer: ["uart"]
-        include:
-          - chip: esp32s3
-            printer: "jtag-serial"
+        device:
+          [
+            { chip: "esp32", target: "xtensa-esp32-none-elf" },
+            { chip: "esp32s2", target: "xtensa-esp32s2-none-elf" },
+            { chip: "esp32s3", target: "xtensa-esp32s3-none-elf" },
+          ]
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: esp-rs/xtensa-toolchain@v1.5
         with:
           default: true
           ldproxy: false
+          buildtargets: ${{ matrix.device.chip }}
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -Zbuild-std=core --no-default-features --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},${{ matrix.printer }}
+
+      # Check the printer features serially rather than in parallel, as the
+      # time to build each feature is *must* shorter than the time to spin
+      # up a new runner:
+
+      - name: Check printer feature (uart)
+        run: cargo build --no-default-features --target=${{ matrix.device.target }} --features=${{ matrix.device.chip }},uart
+
+      - name: Check printer feature (jtag-serial)
+        if: matrix.device.chip == 'esp32s3'
+        run: cargo build --no-default-features --target=${{ matrix.device.target }} --features=${{ matrix.device.chip }},jtag-serial
 
   check-log-riscv:
     name: Log drivers
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        logger: ["", ",log", ",defmt-espflash"]
-        color: [""]
-        critical-section: ["", ",critical-section"]
-        include:
-          - logger: ",log"
-            color: ",colors"
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@v1
         with:
           target: riscv32imc-unknown-none-elf
           toolchain: nightly
           components: rust-src
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -Zbuild-std=core --no-default-features --target=riscv32imc-unknown-none-elf --features=uart,esp32c2${{ matrix.logger }}${{ matrix.color }}${{ matrix.critical-section }}
+
+      # For simplicity, we will only check with the "esp32c2" and "uart"
+      # chip/printer features enabled, since it's the remaining features
+      # which we're actually interested in testing.
+
+      # No logger (with & without `critical-section`):
+      - run: cargo build --target=riscv32imc-unknown-none-elf --no-default-features --features=esp32c2,uart
+      - run: cargo build --target=riscv32imc-unknown-none-elf --no-default-features --features=esp32c2,uart,critical-section
+
+      # `defmt-espflash` (with & without `critical-section`):
+      - run: cargo build --target=riscv32imc-unknown-none-elf --no-default-features --features=esp32c2,uart,defmt-espflash
+      - run: cargo build --target=riscv32imc-unknown-none-elf --no-default-features --features=esp32c2,uart,defmt-espflash,critical-section
+
+      # `log` (with & without `critical-section`, `colors`):
+      - run: cargo build --target=riscv32imc-unknown-none-elf --no-default-features --features=esp32c2,uart,log
+      - run: cargo build --target=riscv32imc-unknown-none-elf --no-default-features --features=esp32c2,uart,log,critical-section
+      - run: cargo build --target=riscv32imc-unknown-none-elf --no-default-features --features=esp32c2,uart,log,colors
+
+  # ---------------------------------------------------------------------------
+  # Lint
 
   rustfmt:
     name: Check formatting
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           components: rustfmt
       - uses: Swatinem/rust-cache@v2
+
       - run: cargo fmt --all -- --check

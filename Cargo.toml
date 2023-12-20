@@ -1,6 +1,6 @@
 [package]
 name    = "esp-println"
-version = "0.7.1"
+version = "0.8.0"
 authors = [
     "Björn Quentin <bjoern.quentin@mobile-j.de>",
     "Jesse Braham <jesse@beta7.io>",
@@ -16,10 +16,10 @@ default-target = "riscv32imc-unknown-none-elf"
 cargo-args = ["-Z", "build-std=core"]
 
 [dependencies]
-log = { version = "0.4.17", optional = true }
+log = { version = "0.4.20", optional = true }
 defmt = { version = "=0.3.5", optional = true }
-critical-section = { version = "1.1.1", optional = true }
-portable-atomic = { version = "1.5.1", default-features = false, optional = true }
+critical-section = { version = "1.1.2", optional = true }
+portable-atomic = { version = "1.6.0", default-features = false, optional = true }
 
 [features]
 default = ["uart", "critical-section", "colors"]

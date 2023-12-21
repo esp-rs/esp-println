@@ -12,7 +12,7 @@ logging capabilities for Espressif devices.
 # Usage
 
 ```toml
-esp-println = { version = "0.7.0", features = ["esp32c2"] }
+esp-println = { version = "0.8.0", features = ["esp32c2"] }
 ```
 or `cargo add esp-println --features esp32c2`
 It's important to specify your target device as feature.
@@ -75,10 +75,6 @@ Using the `defmt-espflash` feature, esp-println will install a defmt global logg
 output to the same data stream as `println!()`, and adds framing bytes so it can be used even with
 other, non-defmt output. Using the `defmt-espflash` feature automatically uses the Rzcobs encoding and does
 not allow changing the encoding.
-
-You can also use the `defmt-raw` feature that allows using any encoding provided by `defmt`, but
-does not add extra framing. Using this feature requires some care as the `defmt` output may become
-unrecoverably mangled when other data is printed.
 
 Follow the [`defmt` book's setup instructions] on how to
 set up `defmt`. Remember, the global logger is already installed for you by `esp-println`!

@@ -71,30 +71,19 @@ If this simple logger implementation isn't sufficient for your needs, you can im
 
 ## `defmt`
 
-Using the `defmt-espflash` feature, esp-println will install a defmt global logger. The logger will
+Using the `defmt-espflash` feature, `esp-println` will install a `defmt` global logger. The logger will
 output to the same data stream as `println!()`, and adds framing bytes so it can be used even with
-other, non-defmt output. Using the `defmt-espflash` feature automatically uses the Rzcobs encoding and does
+other, non-`defmt` output. Using the `defmt-espflash` feature automatically uses the [rzCOBS] encoding and does
 not allow changing the encoding.
 
 Follow the [`defmt` book's setup instructions] on how to
 set up `defmt`. Remember, the global logger is already installed for you by `esp-println`!
-
-# `esp-backtrace`
-
-`esp-println` is usually used alongside [`esp-backtrace`]. When using this
-two crates together, make sure to use the same communication methods for
-both dependencies. Table matching features:
-| `esp-println` | `esp-backtrace`     |
-| ------------- | ------------------- |
-| `uart`        | `print-uart`        |
-| `jtag-serial` | `print-jtag-serial` |
 
 [`defmt`]: https://github.com/knurling-rs/defmt
 [`log` crate]: https://github.com/rust-lang/log
 [rzCOBS]: https://github.com/Dirbaio/rzcobs
 [`espflash`]: https://github.com/esp-rs/espflash
 [disable the default features]: https://doc.rust-lang.org/cargo/reference/features.html#the-default-feature
-[`esp-backtrace`]: https://github.com/esp-rs/esp-backtrace
 [Implementing a Logger section log documentaion]: https://docs.rs/log/0.4.17/log/#implementing-a-logger
 [`defmt` book's setup instructions]: https://defmt.ferrous-systems.com/setup
 

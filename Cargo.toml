@@ -34,7 +34,6 @@ esp32h2 = []
 esp32p4 = []
 esp32s2 = []
 esp32s3 = []
-esp8266 = []
 
 # You must enable exactly 1 of the below features to enable to intended
 # communication method (note that "uart" is enabled by default):

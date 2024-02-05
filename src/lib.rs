@@ -192,7 +192,7 @@ mod serial_jtag_printer {
     }
 }
 
-#[cfg(all(feature = "uart", any(feature = "esp32", feature = "esp8266")))]
+#[cfg(all(feature = "uart", feature = "esp32"))]
 mod uart_printer {
     const UART_TX_ONE_CHAR: usize = 0x4000_9200;
     impl super::Printer {
@@ -237,10 +237,7 @@ mod uart_printer {
     }
 }
 
-#[cfg(all(
-    feature = "uart",
-    not(any(feature = "esp32", feature = "esp32s2", feature = "esp8266"))
-))]
+#[cfg(all(feature = "uart", not(any(feature = "esp32", feature = "esp32s2"))))]
 mod uart_printer {
     trait Functions {
         const TX_ONE_CHAR: usize;

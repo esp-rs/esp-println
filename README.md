@@ -2,11 +2,12 @@
 
 A library that provides `print!`, `println!`, `dbg!` implementations and
 logging capabilities for Espressif devices.
+
 - Supports all Espressif devices.
 - Supports different communication methods:
-    - UART (Default)
-    - JTAG-Serial (Only available in ESP32-C3, ESP32-C6, ESP32-H2, ESP32-S3)
-    - No-op: Turns printing into a no-op
+  - UART (Default)
+  - JTAG-Serial (Only available in ESP32-C3, ESP32-C6, ESP32-H2, ESP32-S3)
+  - No-op: Turns printing into a no-op
 - Supports [`defmt`] backend
 
 # Usage
@@ -14,6 +15,7 @@ logging capabilities for Espressif devices.
 ```toml
 esp-println = { version = "0.8.0", features = ["esp32c2"] }
 ```
+
 or `cargo add esp-println --features esp32c2`
 It's important to specify your target device as feature.
 
@@ -28,18 +30,18 @@ You can now `println!("Hello world")` as usual.
 # Features
 
 - There is one feature for each supported target: `esp32`, `esp32c2`,
-  `esp32c3`, `esp32c6`, `esp32h2`, `esp32s2`, `esp32s3` and `esp8266`.
-   - One of these features must be enabled.
-   - Only one of these features can be enabled at a time.
+  `esp32c3`, `esp32c6`, `esp32h2`, `esp32s2`, and `esp32s3`.
+  - One of these features must be enabled.
+  - Only one of these features can be enabled at a time.
 - There is one feature for each supported communication method: `uart`, `jtag-serial` and `no-op`.
-    - Only one of these features can be enabled at a time.
+  - Only one of these features can be enabled at a time.
 - `log`: Enables logging using [`log` crate].
 - `colors` enable colored logging.
-   - Only effective when using the `log` feature.
+  - Only effective when using the `log` feature.
 - `critical-section` enables critical sections.
 - `defmt-espflash`: This is intended to be used with [`espflash`], see `-L/--log-format` argument
-   of `flash` or `monitor` subcommands of `espflash` and `cargo-espflash`. Uses [rzCOBS] encoding
-   and adds framing.
+  of `flash` or `monitor` subcommands of `espflash` and `cargo-espflash`. Uses [rzCOBS] encoding
+  and adds framing.
 
 ## Default Features
 
@@ -52,6 +54,7 @@ one, we need to [disable the default features].
 ## Logging
 
 With the feature `log` activated you can initialize a simple logger like this
+
 ```rust
 init_logger(log::LevelFilter::Info);
 ```
@@ -59,11 +62,13 @@ init_logger(log::LevelFilter::Info);
 There is a default feature `colors` which enables colored log output.
 
 Additionally, you can use
+
 ```rust
 init_logger_from_env();
 ```
 
 In this case the following environment variables are used:
+
 - `ESP_LOGLEVEL` sets the log level, use values like `trace`, `info` etc.
 - `ESP_LOGTARGETS` if set you should provide the crate names of crates (optionally with a path e.g. `esp_wifi::compat::common`) which should get logged, separated by `,` and no additional whitespace between
 
@@ -89,7 +94,7 @@ set up `defmt`. Remember, the global logger is already installed for you by `esp
 
 # Troubleshooting linker errors
 
-If you experience linker errors, make sure you have *some* reference to `esp_println` in your code.
+If you experience linker errors, make sure you have _some_ reference to `esp_println` in your code.
 If you don't use `esp_println` directly, you'll need to add e.g. `use esp_println as _;` to your
 import statements. This ensures that the global logger will not be removed by the compiler.
 

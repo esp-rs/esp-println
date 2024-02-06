@@ -3,7 +3,7 @@
 A library that provides `print!`, `println!`, `dbg!` implementations and
 logging capabilities for Espressif devices.
 
-- Supports all Espressif devices.
+- Supports all Espressif ESP32 family devices.
 - Supports different communication methods:
   - UART (Default)
   - JTAG-Serial (Only available in ESP32-C3, ESP32-C6, ESP32-H2, ESP32-S3)

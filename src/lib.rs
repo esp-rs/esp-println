@@ -1,4 +1,6 @@
 #![doc = include_str!("../README.md")]
+#![doc(html_logo_url = "https://avatars.githubusercontent.com/u/46717278")]
+#![allow(rustdoc::bare_urls)]
 #![no_std]
 
 #[cfg(feature = "defmt-espflash")]

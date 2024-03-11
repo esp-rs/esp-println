@@ -84,6 +84,9 @@ not allow changing the encoding.
 Follow the [`defmt` book's setup instructions] on how to
 set up `defmt`. Remember, the global logger is already installed for you by `esp-println`!
 
+Please note that `defmt` does _not_ provide MSRV guarantees with releases, and as such we are not able to make any MSRV guarantees when this feature is enabled. For more information refer to the MSRV section of `defmt`'s README:  
+https://github.com/knurling-rs/defmt?tab=readme-ov-file#msrv
+
 [`defmt`]: https://github.com/knurling-rs/defmt
 [`log` crate]: https://github.com/rust-lang/log
 [rzCOBS]: https://github.com/Dirbaio/rzcobs

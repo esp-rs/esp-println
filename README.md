@@ -1,5 +1,9 @@
 # esp-println
 
+---
+## This project has moved! It can now be found in the [esp-rs/esp-hal](https://github.com/esp-rs/esp-hal/tree/main/esp-println) repository.
+---
+
 A library that provides `print!`, `println!`, `dbg!` implementations and
 logging capabilities for Espressif devices.
 
